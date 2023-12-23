@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
-set(FREERTOS_KERNEL_PATH ${CMAKE_HOME_DIRECTORY}/FreeRTOS-Kernel)
+# set(FREERTOS_KERNEL_PATH ${CMAKE_HOME_DIRECTORY}/FreeRTOS-Kernel)
 # Pull in SDK (must be before project)
 include(pico_sdk_import.cmake)
-include_directories(${CMAKE_HOME_DIRECTORY}/config/freeRTOS)
 include(FreeRTOS_Kernel_import.cmake)
 
 project("timer_controller" C CXX ASM)
+include_directories(${CMAKE_HOME_DIRECTORY}/config/freeRTOS)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,12 +15,5 @@ endif()
 
 # Initialize the SDK
 pico_sdk_init()
-
+add_compile_options(-fdata-sections -ffunction-sections -Wl,--gc-sections)
 add_subdirectory(src)
-add_compile_options(-Wall
-        -Wno-format          # int != int32_t as far as the compiler is concerned because gcc has int32_t as long int
-        -Wno-unused-function # we have some for the docs that aren't called
-        )
-if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-Wno-maybe-uninitialized)
-endif()
