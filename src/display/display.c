@@ -1,52 +1,103 @@
+/**
+ * Module display provides A single thread to run all the UI/UX
+ * It also provides basic API for memory allocation
+ * ALl UI/UX should run in display's context since they are not thread safe
+ * 
+*/
+
 #include "display.h"
 #include "console.h"
 #include "u8g2.h"
 #include "display_u8g2_port.h"
 #include "FreeRTOS.h"
 #include "task.h"
-static u8g2_t u8g2_disp;
+#include "ux.h"
+#include "queue.h"
+// Private variable
+static QueueHandle_t thread_msg_queue;
 static void display_thread_entry(void* unused_arg);
 void display_init()
 {
   CONSOLE_LOG_INFO("Init display");
-  display_u8g2_port_init();
+  // Create message queue
+  thread_msg_queue = xQueueCreate(DISPLAY_MSG_QUEUE_LENGTH, sizeof(display_msg_t));
+  if(thread_msg_queue == NULL)
+  {
+    CONSOLE_LOG_ERROR("Fail to create msg queue");
+  }
   xTaskCreate(display_thread_entry, 
               "DISPLAY_THREAD", 
-              1024, 
+              (DISPLAY_THREAD_STACK_SIZE/sizeof(configSTACK_DEPTH_TYPE)), 
               NULL, 
               1, 
               NULL);
 }
 
+void* display_mem_malloc(uint32_t num_bytes)
+{
+  return pvPortMalloc(num_bytes);
+}
+
+void display_mem_free(void * const p_mem)
+{
+  vPortFree(p_mem);
+}
+
+void display_thread_post_msg(display_msg_t msg)
+{
+  if(!msg.func)
+  {
+    CONSOLE_LOG_ERROR("Display msg has no function");
+    return;
+  }
+  // Allocate new memory if needed
+  if(msg.param_size)
+  {
+    void * p_param_mem = display_mem_malloc(msg.param_size);
+    if(!p_param_mem)
+    {
+      CONSOLE_LOG_ERROR("Fail to alloc %d bytes, out of heap ?", msg.param_size);
+      return;
+    }
+    // Copy param to new allocated memory
+    memcpy(p_param_mem, msg.p_param, msg.param_size);
+    // change the pointer to our new allocated memory
+    msg.p_param = p_param_mem;
+  }
+  if(xQueueSend(thread_msg_queue, &msg, 0) != pdTRUE)
+  {
+    // Post fail
+    CONSOLE_LOG_ERROR("Send Display msg fail");
+    // Free the memory if allocated
+    if(msg.param_size) display_mem_free(msg.p_param);
+  }
+}
+
 static void display_thread_entry(void* unused_arg)
 {
-  CONSOLE_LOG_INFO("Display Thread entry");
-  u8g2_Setup_st7567_i2c_enh_dg128064i_f(&u8g2_disp, U8G2_R0, display_u8g2_port_i2c, display_u8g2_port_gpio_delay);
-  u8g2_InitDisplay(&u8g2_disp);
-  u8g2_SetPowerSave(&u8g2_disp, 0);
-  u8g2_ClearBuffer(&u8g2_disp);
-    u8g2_SetFontMode(&u8g2_disp, 1);	// Transparent
-    u8g2_SetDrawColor(&u8g2_disp, 1);  // use this before call to DrawStr
-    u8g2_SetFontDirection(&u8g2_disp, 0);
-    u8g2_SetFont(&u8g2_disp,u8g2_font_inb24_mf);
-    u8g2_DrawStr(&u8g2_disp, 0, 30, "U");
-    u8g2_SetFontDirection(&u8g2_disp,1);
-    u8g2_SetFont(&u8g2_disp, u8g2_font_inb30_mn);
-    u8g2_DrawStr(&u8g2_disp, 21,8,"8");
-    u8g2_SetFontDirection(&u8g2_disp, 0);
-    u8g2_SetFont(&u8g2_disp, u8g2_font_inb24_mf);
-    u8g2_DrawStr(&u8g2_disp, 51,30,"g");
-    u8g2_DrawStr(&u8g2_disp, 67,30,"\xb2");
-    u8g2_DrawHLine(&u8g2_disp, 2, 35, 47);
-    u8g2_DrawHLine(&u8g2_disp, 3, 36, 47);
-    u8g2_DrawVLine(&u8g2_disp, 45, 32, 12);
-    u8g2_DrawVLine(&u8g2_disp, 46, 33, 12);
-    u8g2_SendBuffer(&u8g2_disp);
-    u8g2_UpdateDisplay(&u8g2_disp);
+  CONSOLE_LOG_DEBUG("Display Thread entry");
+  display_u8g2_port_init();
+  // Init ux
+  ux_init();
+  ux_send_event(UX_EVENT_STARTUP, NULL);
   while (1)
   {
-    vTaskDelay(1000);
-    /* code */
+    display_msg_t thread_msg;
+    xQueueReceive(thread_msg_queue, &thread_msg, portMAX_DELAY);
+    // Thread will block until there is new message
+    if(thread_msg.func == NULL)
+    {
+      // Invalid message received
+      CONSOLE_LOG_ERROR("Received invalid disp message");
+    }
+    else
+    {
+      thread_msg.func(thread_msg.p_param);
+      if(thread_msg.param_size)
+      {
+        display_mem_free(thread_msg.p_param);
+      }
+    }
   }
-  
 }
+

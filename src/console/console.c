@@ -5,5 +5,5 @@
 
 uint32_t console_get_time_ms()
 {
-  return xTaskGetTickCountFromISR();
+  return xTaskGetTickCountFromISR() / portTICK_RATE_MS;
 }

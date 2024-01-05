@@ -15,5 +15,5 @@ endif()
 
 # Initialize the SDK
 pico_sdk_init()
-add_compile_options(-fdata-sections -ffunction-sections -Wl,--gc-sections)
+add_compile_options(-fdata-sections -ffunction-sections -Wl,--gc-sections -O0 )
 add_subdirectory(src)

@@ -25,6 +25,10 @@
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "files.associations": {
     "stdlib.h": "c",
-    "display.h": "c"
+    "display.h": "c",
+    "icalarm.h": "c",
+    "u8g2.h": "c",
+    "i2c.h": "c",
+    "user_input_def.h": "c"
   }
 }
