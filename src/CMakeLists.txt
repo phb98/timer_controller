@@ -7,7 +7,8 @@ set(MODULE_LIB_LIST "display"
                     "console"
                     "user_input"
                     "hal_i2c"
-                    "rtc")
+                    "rtc"
+                    "LFS")
 
 
 # submoudle directory
@@ -16,6 +17,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/console)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/user_input)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/hal_i2c)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/rtc)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lfs)
+
 
 
 # Link using library

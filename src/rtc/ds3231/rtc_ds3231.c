@@ -21,7 +21,7 @@ static uint8_t  bin2bcd(uint8_t val) { return val + 6 * (val / 10); }
 static rtc_controller_t rtc_controller =
 {
   .init = ds3231_init,
-  .get_current_datetime = ds3231_get_datetime,
+  .get_datetime = ds3231_get_datetime,
   .adjust_datetime = ds3231_set_datetime,
 };
 
@@ -112,7 +112,7 @@ static void ds3231_start()
 {
   uint8_t stat_reg;
   read_reg(DS3231_STATUSREG, &stat_reg);
-  stat_reg &= ~(128); // flip OSF bit
+  stat_reg &= ~(DS3231_STATUSREG_OSC_STOP_BIT); // flip OSF bit
   write_reg(DS3231_STATUSREG, &stat_reg);
 }
 

@@ -15,6 +15,7 @@
 #include "display.h"
 #include "user_input.h"
 #include "rtc.h"
+#include "littlefs_port.h"
 // Private functions prototype
 void low_level_init();
 TaskHandle_t pico_task_handle = NULL;
@@ -49,8 +50,10 @@ int main() {
   stdio_init_all();
   CONSOLE_LOG_INFO("Begin system init");
   low_level_init();
+  lfs_port_init();
   display_init();
   user_input_init();
+  rtc_init();
   BaseType_t pico_status = xTaskCreate(led_task_pico, 
                                         "PICO_LED_TASK", 
                                         1024, 
@@ -71,6 +74,5 @@ void low_level_init()
 {
   // Init hardware stuff before RTOS
   // hal_i2c_init(HAL_I2C0);
-  rtc_init();
 }
 

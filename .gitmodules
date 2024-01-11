@@ -4,3 +4,6 @@
 [submodule "src/display/u8g2"]
 	path = src/display/u8g2
 	url = https://github.com/olikraus/u8g2.git
+[submodule "src/nvs/littlefs"]
+	path = src/nvs/littlefs
+	url = https://github.com/littlefs-project/littlefs.git

@@ -18,14 +18,14 @@ void rtc_init()
       CONSOLE_LOG_ERROR("Fail to get RTC controller");
       return;
     }
-    if(!CHECK_VALID_CONTROLLER(p_rtc_controller, init) || !CHECK_VALID_CONTROLLER(p_rtc_controller, get_current_datetime))
+    if(!CHECK_VALID_CONTROLLER(p_rtc_controller, init) || !CHECK_VALID_CONTROLLER(p_rtc_controller, get_datetime))
     {
       CONSOLE_LOG_ERROR("RTC controller not having init function");
       return;
     }
     p_rtc_controller->init();
     // Get current date time
-    rtc_t now = p_rtc_controller->get_current_datetime();
+    rtc_t now = p_rtc_controller->get_datetime();
     CONSOLE_LOG_INFO("Current datetime: %s, %d-%d-%d - %d:%d:%d",rtc_get_DoW_string(now.date.DoW, true),
                                                                 now.date.year, now.date.month, now.date.day,
                                                                 now.time.hour, now.time.minute, now.time.second);

@@ -25,7 +25,7 @@ typedef struct
 typedef struct
 {
   void  (*init)();
-  rtc_t (*get_current_datetime)();
+  rtc_t (*get_datetime)();
   void  (*adjust_datetime)(const rtc_t * const p_datetime);
 } rtc_controller_t;
 void rtc_init();
