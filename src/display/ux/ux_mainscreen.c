@@ -2,6 +2,8 @@
 #include "console.h"
 #include "ui.h"
 #include "ux_timer.h"
+#include "rtc.h"
+#include <string.h>
 #define NODE_NAME "MAIN SCREEN"
 
 // Private function prototype
@@ -15,6 +17,7 @@ ux_node_t ux_mainscreen_node =
   .node_process = node_process
 };
 // Private variable
+static rtc_t current_time;
 // Private function
 static void node_draw_scr()
 {
@@ -22,8 +25,8 @@ static void node_draw_scr()
   ui_screen_info_t mainscreen_info =
   {
     .mainscreen = {
-      .hour   = 12,
-      .minute = 00
+      .hour   = current_time.time.hour,
+      .minute = current_time.time.second
     }
   };
   ui_update_screen(UI_SCREEN_MAINSCREEN, &mainscreen_info);
@@ -35,6 +38,10 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
   {
     case UX_EVENT_NODE_SWITCH_INTO:
       CONSOLE_LOG_DEBUG("Switch into %s node", NODE_NAME);
+      break;
+    case UX_EVENT_TIME_UPDATE:
+      memcpy(&current_time, &(p_evt_param->time_update.new_time), sizeof(rtc_t));
+      p_node_ret = &ux_mainscreen_node;
       break;
     default:
       break;

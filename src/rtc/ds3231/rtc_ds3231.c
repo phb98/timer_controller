@@ -1,5 +1,7 @@
 #include "rtc_ds3231.h"
 #include "ds3231_regs.h"
+#include "hardware/gpio.h"
+#include "hardware/irq.h"
 #include "hal_i2c.h"
 #include "console.h"
 #include "sys_config.h"
@@ -9,7 +11,10 @@ static void     ds3231_init();
 static rtc_t    ds3231_get_datetime();
 static bool     ds3231_is_stopped();
 static void     ds3231_set_datetime(const rtc_t * const p_datetime);
+static void     ds3231_reg_new_time_cb(void (*cb)());
+
 static void     ds3231_start();
+static void     ds3231_enable_sqw(bool is_enable);
 static bool     write_reg(uint8_t reg, uint8_t * const p_data);
 static bool     read_reg(uint8_t reg, uint8_t * const p_data);
 static bool     read_multi_regs(const uint8_t start_reg, const uint8_t num_reg, uint8_t * const p_data);
@@ -17,16 +22,21 @@ static bool     write_multi_regs(const uint8_t start_reg, const uint8_t num_reg,
 static uint8_t  bcd2bin(uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t  bin2bcd(uint8_t val) { return val + 6 * (val / 10); }
 
+#ifdef CONFIG_RTC_INTERRUPT_PIN
+static void rtc_gpio_int_cb();
+static void rtc_gpio_int_setup(uint pin);
+#endif
 // Private variable
 static rtc_controller_t rtc_controller =
 {
   .init = ds3231_init,
   .get_datetime = ds3231_get_datetime,
   .adjust_datetime = ds3231_set_datetime,
+  .reg_new_time_cb = ds3231_reg_new_time_cb, 
 };
 
 static hal_i2c_handle_t rtc_i2c_handle;
-
+static void (*new_time_cb)() = NULL;
 static const rtc_t default_time = 
 {
   .date = 
@@ -49,7 +59,7 @@ rtc_controller_t * rtc_ds3231_get_controller()
   return &rtc_controller;
 }
 
-// Private functions
+// Private functions exposed
 static void ds3231_init()
 {
   CONSOLE_LOG_INFO("Init RTC DS3231");
@@ -71,7 +81,10 @@ static void ds3231_init()
     ds3231_set_datetime(&default_time);
     ds3231_start();
   }
-  
+#ifdef CONFIG_RTC_INTERRUPT_PIN
+  ds3231_enable_sqw(true); // Enable 1hz square wave to read RTC periodically and in sync with RTC
+  rtc_gpio_int_setup(CONFIG_RTC_INTERRUPT_PIN);
+#endif
 }
 static rtc_t ds3231_get_datetime()
 {
@@ -107,7 +120,14 @@ static void ds3231_set_datetime(const rtc_t * const p_datetime)
   };
   write_multi_regs(DS3231_TIMEREG, sizeof(buffer), buffer);
 }
+static void ds3231_reg_new_time_cb(void (*cb)())
 
+{
+  ASSERT_LOG_ERROR_RETURN(cb, "Invalid input");
+  new_time_cb = cb;
+}
+
+// Private functions
 static void ds3231_start()
 {
   uint8_t stat_reg;
@@ -126,6 +146,23 @@ static bool ds3231_is_stopped()
   }
   else return 0;
 }
+
+static void ds3231_enable_sqw(bool is_enable)
+{
+  uint8_t temp;
+  read_reg(DS3231_CONTROL, &temp);
+  if(is_enable)
+  {
+    temp &= ~(DS3231_CONTROL_INTCN_BIT); // set INTCN To 0 to enable Square wave output
+    temp &= ~(DS3231_CONTROL_RS2_BIT | DS3231_CONTROL_RS1_BIT); // Set 1 Hz
+  }
+  else
+  {
+    temp |= (0x1 << 2); // set INTCN To 1 to disable Square wave output
+  }
+  write_reg(DS3231_CONTROL, &temp);
+}
+
 static bool write_reg(uint8_t reg, uint8_t * const p_data)
 {
   if(!p_data)
@@ -195,3 +232,25 @@ static bool write_multi_regs(const uint8_t start_reg, const uint8_t num_reg, con
   }
   return true;
 }
+
+#ifdef CONFIG_RTC_INTERRUPT_PIN
+static void rtc_gpio_int_setup(uint pin)
+{
+  gpio_set_function(pin,  GPIO_FUNC_SIO);
+  gpio_pull_up(pin);
+  // Enable GPIO interrupt
+  gpio_set_irq_enabled(pin, GPIO_IRQ_EDGE_FALL, true);
+  gpio_add_raw_irq_handler(pin, rtc_gpio_int_cb);
+}
+static void rtc_gpio_int_cb()
+{
+  if (gpio_get_irq_event_mask(CONFIG_RTC_INTERRUPT_PIN) & GPIO_IRQ_EDGE_FALL) {
+    gpio_acknowledge_irq(CONFIG_RTC_INTERRUPT_PIN, GPIO_IRQ_EDGE_FALL);
+    // handle the IRQ
+    if(new_time_cb)
+    {
+      new_time_cb();
+    }
+  }
+}
+#endif

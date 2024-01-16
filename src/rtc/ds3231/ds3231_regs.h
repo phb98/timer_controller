@@ -5,6 +5,9 @@
 #define DS3231_ALARM1                 (0x07)    ///< Alarm 1 register
 #define DS3231_ALARM2                 (0x0B)    ///< Alarm 2 register
 #define DS3231_CONTROL                (0x0E)   ///< Control register
+#define DS3231_CONTROL_INTCN_BIT      (1 << 2)
+#define DS3231_CONTROL_RS2_BIT        (1 << 4)
+#define DS3231_CONTROL_RS1_BIT        (1 << 3)
 #define DS3231_STATUSREG              (0x0F) ///< Status register
 #define DS3231_STATUSREG_OSC_STOP_BIT (1 << 7)
 #define DS3231_TEMPERATUREREG 0x11 ///< Temperature register (high byte - low byte is at 0x12)

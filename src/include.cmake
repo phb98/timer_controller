@@ -10,6 +10,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/user_input)
 include_directories(${PROJECT_SOURCE_DIR}/src/hal_i2c)
 include_directories(${PROJECT_SOURCE_DIR}/src/rtc)
 include_directories(${PROJECT_SOURCE_DIR}/src/lfs)
+include_directories(${PROJECT_SOURCE_DIR}/src/scheduler)
+
 
 
 

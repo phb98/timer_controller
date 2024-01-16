@@ -2,7 +2,7 @@
 #define _UX_H_
 #include <stdint.h>
 #include "user_input.h"
-
+#include "rtc.h"
 
 typedef enum
 {
@@ -10,6 +10,7 @@ typedef enum
   UX_EVENT_TIMER_FIRED,
   UX_EVENT_NODE_SWITCH_INTO,
   UX_EVENT_BUTTON,
+  UX_EVENT_TIME_UPDATE,
   NUM_OF_UX_EVENT
 } ux_event_t;
 typedef union
@@ -21,6 +22,9 @@ typedef union
     user_input_button_t button;
     user_input_button_evt_t evt;
   } button;
+  struct{
+    rtc_t new_time;
+  } time_update;
 } ux_evt_param_t;
 
 typedef struct ux_node_t

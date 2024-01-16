@@ -16,7 +16,7 @@
 #define DISPLAY_ST7567_LCD                  (1)
 #define CONFIG_DISPLAY_USE                  DISPLAY_ST7567_LCD
 #define CONFIG_DISPLAY_I2C                  (HAL_I2C0)
-#define CONFIG_DISPLAY_I2C_SPEED            (100*1000)
+#define CONFIG_DISPLAY_I2C_SPEED            (1000*1000)
 #define CONFIG_DISPLAY_ORIENTATION          (U8G2_R2) // U8G2_Rx, x= 0 or 2
 #if CONFIG_DISPLAY_USE == DISPLAY_ST7567_LCD
 #define CONFIG_DISPLAY_I2C_ADDR             (0x3f)
@@ -46,7 +46,9 @@
 #define CONFIG_RTC_CHIP_DS3231               (1)
 #define CONFIG_RTC_CHIP_USING                (CONFIG_RTC_CHIP_DS3231)
 #define CONFIG_RTC_I2C                       (HAL_I2C0)
-#define CONFIG_RTC_I2C_SPEED                 (100*1000)
+#define CONFIG_RTC_I2C_SPEED                 (400*1000)
+#define CONFIG_RTC_INTERRUPT_PIN             (12)
+#define CONFIG_RTC_MAX_CALLBACK_NUM          (8)
 // Flash
 #define CONFIG_FLASH_SIZE                    (16*1024*1024) // 16MB
 #define CONFIG_PROGRAM_SIZE                  (2*1024*1024) // Default Pico board use 2MB flash

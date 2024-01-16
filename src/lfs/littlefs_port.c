@@ -17,8 +17,7 @@
 static uint8_t read_cache[FLASH_SECTOR_SIZE];
 static uint8_t prog_cache[FLASH_SECTOR_SIZE];
 static uint8_t look_ahead_cache[LFS_LOOKAHEAD_SIZE];
-lfs_t lfs;
-lfs_file_t file;
+static lfs_t lfs;
 #ifdef LFS_THREADSAFE
 SemaphoreHandle_t lfs_mutex;
 #endif
@@ -57,6 +56,8 @@ const struct lfs_config cfg = {
 
 // entry point
 int test(void) {
+    lfs_file_t file;
+
     // mount the filesystem
     int err = lfs_mount(&lfs, &cfg);
 
@@ -104,6 +105,11 @@ void lfs_port_init()
     lfs_format(&lfs, &cfg);
     lfs_mount(&lfs, &cfg);
   }
+}
+
+lfs_t * lfs_port_get_lfs_handle()
+{
+  return &lfs;
 }
 // PORTING 
 

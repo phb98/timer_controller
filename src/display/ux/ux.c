@@ -2,6 +2,7 @@
 #include "console.h"
 #include "ux_timer.h"
 #include "display.h"
+#include "ux_time.h"
 // List of all node
 extern ux_node_t ux_startup_node;
 
@@ -18,6 +19,7 @@ static void ux_process_event(void * p_display_msg);
 void ux_init()
 {
   ux_timer_init();
+  ux_time_init();
   CONSOLE_LOG_INFO("UX init done");
 }
 

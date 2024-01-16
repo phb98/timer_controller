@@ -23,7 +23,9 @@
 #define GET_FILE_NAME(path) (strrchr(path, '/') ? strrchr(path, '/') + 1 : path)
 #define _FILE_NAME_ GET_FILE_NAME(__FILE__)
 
-#define CONSOLE_LOG(level_char, color_str, fmt, ...) CONFIG_CONSOLE_PRINTF("%s[%-8d] %-20s  %-25s %-4d  [%c]  " fmt COLOR_RESET, color_str, console_get_time_ms(), _FILE_NAME_, __func__, __LINE__, level_char, ##__VA_ARGS__)
+#define CONSOLE_LOG(level_char, color_str, fmt, ...) CONFIG_CONSOLE_PRINTF("%s[%-8d] %-20s  %-25s %-4d  [%c]  " fmt COLOR_RESET,\
+                                                                          color_str, console_get_time_ms(), _FILE_NAME_, __func__,\
+                                                                          __LINE__, level_char, ##__VA_ARGS__)
 
 #if CONFIG_CONSOLE_LOG_LEVEL >= CONSOLE_LOG_LEVEL_ERROR
 #define CONSOLE_LOG_ERROR(fmt, ...)    CONSOLE_LOG('E', COLOR_RED, fmt, ##__VA_ARGS__)
@@ -54,6 +56,14 @@
 #else
 #define CONSOLE_LOG_VERBOSE(...)
 #endif
+
+#define ASSERT_LOG_ERROR(a, ...)        do{if(!(a)) {CONSOLE_LOG_ERROR(__VA_ARGS__);}} while(0)
+#define ASSERT_LOG_ERROR_RETURN(a, ...) do{\
+                                           if(!(a)) {\
+                                            CONSOLE_LOG_ERROR(__VA_ARGS__);\
+                                            return;\
+                                            }\
+                                          } while(0)
 
 uint32_t console_get_time_ms();
 #endif
