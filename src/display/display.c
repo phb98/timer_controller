@@ -93,7 +93,7 @@ static void display_thread_entry(void* unused_arg)
     else
     {
       thread_msg.func(thread_msg.p_param);
-      if(thread_msg.param_size)
+      if(thread_msg.p_param)
       {
         display_mem_free(thread_msg.p_param);
       }

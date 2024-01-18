@@ -21,7 +21,7 @@ ux_node_t ux_startup_node =
 static void node_draw_scr()
 {
   CONSOLE_LOG_VERBOSE("Request node %s draw screen", NODE_NAME);
-  ui_update_screen(UI_SCREEN_STARTUP, NULL);
+  ui_update_screen(UI_SCREEN_STARTUP, NULL, true);
 }
 static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_param)
 {

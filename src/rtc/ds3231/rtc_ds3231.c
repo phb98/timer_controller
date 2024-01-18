@@ -155,10 +155,12 @@ static void ds3231_enable_sqw(bool is_enable)
   {
     temp &= ~(DS3231_CONTROL_INTCN_BIT); // set INTCN To 0 to enable Square wave output
     temp &= ~(DS3231_CONTROL_RS2_BIT | DS3231_CONTROL_RS1_BIT); // Set 1 Hz
+    CONSOLE_LOG_DEBUG("Enable DS3231 Square wave");
   }
   else
   {
     temp |= (0x1 << 2); // set INTCN To 1 to disable Square wave output
+    CONSOLE_LOG_DEBUG("Disable DS3231 Square wave");
   }
   write_reg(DS3231_CONTROL, &temp);
 }

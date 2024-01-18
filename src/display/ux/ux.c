@@ -62,7 +62,7 @@ static void ux_process_event(void * p_display_msg)
   ux_msg_t * p_ux_msg = (ux_msg_t *)p_display_msg;
   ux_node_t * p_next_node = p_current_node->node_process(p_ux_msg->evt, (p_ux_msg->p_param));
   // Free the allocated memory
-  if(!p_ux_msg->p_param) display_mem_free(p_ux_msg->p_param);
+  if(p_ux_msg->p_param) display_mem_free(p_ux_msg->p_param);
   if(p_next_node != NULL)
   {
     if(p_current_node != p_next_node)

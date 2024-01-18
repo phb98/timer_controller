@@ -74,14 +74,20 @@ uint32_t hal_i2c_send_blocking(hal_i2c_handle_t * const p_handle, const uint8_t 
   {
     p_i2c->current_speed = speed;
     i2c_set_baudrate(p_i2c->hw_i2c, speed);
+    vTaskDelay(MS_TO_TICK_RTOS(50));
   }
-  int byte_sent = i2c_write_blocking(p_i2c->hw_i2c, addr, p_data, num_data, false);
+  //int byte_sent = i2c_write_blocking(p_i2c->hw_i2c, addr, p_data, num_data, false);
+  int byte_sent = i2c_write_timeout_us(p_i2c->hw_i2c, addr, p_data, num_data, false, (3*1000*1000));
+  i2c_hw_t * p_i2c_hw = i2c_get_hw(p_i2c->hw_i2c);
   // Give back the mutex
-  xSemaphoreGive(p_i2c->mutex);
-  if(byte_sent != num_data)
+  if(byte_sent != (int)num_data)
   {
-    return 0;
+    uint8_t temp_rec;
+    i2c_read_timeout_us(p_i2c->hw_i2c, 0xFF, &temp_rec, 1, 0, 1000*1000);
+    byte_sent = 0;
   }
+
+  xSemaphoreGive(p_i2c->mutex);
   return byte_sent;
 }
 
@@ -103,7 +109,7 @@ uint32_t hal_i2c_read_blocking(hal_i2c_handle_t * const p_handle, const uint8_t 
   if(p_i2c->current_speed != speed)
   {
     p_i2c->current_speed = speed;
-    i2c_set_baudrate(p_i2c->hw_i2c, speed);
+    //i2c_set_baudrate(p_i2c->hw_i2c, speed);
   }
   int byte_read = i2c_read_blocking(p_i2c->hw_i2c, addr, p_data, num_data, false);
   // Give back the mutex
@@ -134,8 +140,8 @@ static void i2c_hw_init(const hal_i2c_instance_t ins)
   // Set GPIO
   gpio_set_function(p_i2c_hw->scl_pin, GPIO_FUNC_I2C);
   gpio_set_function(p_i2c_hw->sda_pin, GPIO_FUNC_I2C);
-  gpio_pull_up(p_i2c_hw->scl_pin);
-  gpio_pull_up(p_i2c_hw->sda_pin);
+  //gpio_pull_up(p_i2c_hw->scl_pin);
+  //gpio_pull_up(p_i2c_hw->sda_pin);
 }
 
 

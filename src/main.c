@@ -21,7 +21,11 @@ void low_level_init();
 TaskHandle_t pico_task_handle = NULL;
 volatile uint8_t a = 0;
 void led_task_pico(void* unused_arg) {
-
+    low_level_init();
+    lfs_port_init();
+    display_init();
+    user_input_init();
+    rtc_init();
     // Store the Pico LED state
     uint8_t pico_led_state = 0;
     
@@ -49,11 +53,6 @@ void led_task_pico(void* unused_arg) {
 int main() {
   stdio_init_all();
   CONSOLE_LOG_INFO("Begin system init");
-  low_level_init();
-  lfs_port_init();
-  display_init();
-  user_input_init();
-  rtc_init();
   BaseType_t pico_status = xTaskCreate(led_task_pico, 
                                         "PICO_LED_TASK", 
                                         1024, 
