@@ -139,7 +139,7 @@ static int lfs_port_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_
   }
   if(size % (c->prog_size) != 0)
   {
-    CONSOLE_LOG_ERROR("Program not round byte:%d", size);
+    CONSOLE_LOG_ERROR("Program not round byte:%ld", size);
     return -1;
   }
   uint32_t prog_addr = CONFIG_LFS_START_ADDR + (c->block_size) * block + off - FLASH_PROG_ERASE_OFFSET;

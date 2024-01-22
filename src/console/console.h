@@ -23,7 +23,7 @@
 #define GET_FILE_NAME(path) (strrchr(path, '/') ? strrchr(path, '/') + 1 : path)
 #define _FILE_NAME_ GET_FILE_NAME(__FILE__)
 
-#define CONSOLE_LOG(level_char, color_str, fmt, ...) CONFIG_CONSOLE_PRINTF("%s[%-8d] %-20s  %-25s %-4d  [%c]  " fmt COLOR_RESET,\
+#define CONSOLE_LOG(level_char, color_str, fmt, ...) CONFIG_CONSOLE_PRINTF("%s[%-8lu] %-20s  %-25s %-4d  [%c]  " fmt COLOR_RESET,\
                                                                           color_str, console_get_time_ms(), _FILE_NAME_, __func__,\
                                                                           __LINE__, level_char, ##__VA_ARGS__)
 

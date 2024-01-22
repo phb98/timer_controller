@@ -11,6 +11,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src/hal_i2c)
 include_directories(${PROJECT_SOURCE_DIR}/src/rtc)
 include_directories(${PROJECT_SOURCE_DIR}/src/lfs)
 include_directories(${PROJECT_SOURCE_DIR}/src/scheduler)
+include_directories(${PROJECT_SOURCE_DIR}/src/output_controller)
+
 
 
 

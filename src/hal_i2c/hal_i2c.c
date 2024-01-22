@@ -44,6 +44,9 @@ void hal_i2c_get_handle(hal_i2c_handle_t * const p_handle, const hal_i2c_instanc
   p_handle->speed = speed;
   // This function will not reinit the i2c if the i2c already inited, so dont worry
   i2c_hw_init(ins);
+  i2c_t * const p_i2c = &i2c_hw_table[ins];
+  xSemaphoreTake(p_i2c->mutex, 10000);
+  xSemaphoreGive(p_i2c->mutex);
 }
 
 void hal_i2c_set_speed(hal_i2c_handle_t * const p_handle, const uint32_t speed)
@@ -80,14 +83,11 @@ uint32_t hal_i2c_send_blocking(hal_i2c_handle_t * const p_handle, const uint8_t 
   int byte_sent = i2c_write_timeout_us(p_i2c->hw_i2c, addr, p_data, num_data, false, (3*1000*1000));
   i2c_hw_t * p_i2c_hw = i2c_get_hw(p_i2c->hw_i2c);
   // Give back the mutex
-  if(byte_sent != (int)num_data)
-  {
-    uint8_t temp_rec;
-    i2c_read_timeout_us(p_i2c->hw_i2c, 0xFF, &temp_rec, 1, 0, 1000*1000);
-    byte_sent = 0;
-  }
-
   xSemaphoreGive(p_i2c->mutex);
+  if(byte_sent != num_data)
+  {
+    return 0;
+  }
   return byte_sent;
 }
 
@@ -136,12 +136,45 @@ static void i2c_hw_init(const hal_i2c_instance_t ins)
     CONSOLE_LOG_ERROR("Fail to create i2c mutex");
     return;
   }
-  i2c_init(p_i2c_hw->hw_i2c, p_i2c_hw->current_speed);
+  xSemaphoreTake(p_i2c_hw->mutex, 5000);
+  uint8_t scl_gpio_state, sda_gpio_state;
+  scl_gpio_state = gpio_get(p_i2c_hw->scl_pin);
+  sda_gpio_state = gpio_get(p_i2c_hw->sda_pin);
+  CONSOLE_LOG_DEBUG("i2c_scl state:%d", scl_gpio_state);
+  CONSOLE_LOG_DEBUG("i2c_sda state:%d", sda_gpio_state);
+  if(!scl_gpio_state || !sda_gpio_state)
+  {
+    // I2C BUS stuck, try to recovery
+    CONSOLE_LOG_WARN("I2C%d bus stuck, try to recovery", ins);
+    const uint8_t clock_num = 128;
+     // Set SCL to output to manually bit banging
+    gpio_set_dir(p_i2c_hw->sda_pin, false); //
+
+    for(int i = 0; i < clock_num; i++)
+    {
+      if(sda_gpio_state)
+      {
+        CONSOLE_LOG_WARN("I2C recovery success");
+        break;
+      }
+      gpio_set_dir(p_i2c_hw->scl_pin, true);
+      gpio_put(p_i2c_hw->scl_pin, 0);
+      for(volatile int temp = 0; temp < 100; temp++);
+      gpio_set_dir(p_i2c_hw->scl_pin, false);
+
+      sda_gpio_state = gpio_get(p_i2c_hw->sda_pin);
+      for(volatile int temp = 0; temp < 100; temp++);
+    }
+  }
+
   // Set GPIO
   gpio_set_function(p_i2c_hw->scl_pin, GPIO_FUNC_I2C);
   gpio_set_function(p_i2c_hw->sda_pin, GPIO_FUNC_I2C);
+  i2c_init(p_i2c_hw->hw_i2c, p_i2c_hw->current_speed);
   //gpio_pull_up(p_i2c_hw->scl_pin);
   //gpio_pull_up(p_i2c_hw->sda_pin);
+  xSemaphoreGive(p_i2c_hw->mutex);
+  CONSOLE_LOG_DEBUG("I2C%d init done", ins);
 }
 
 

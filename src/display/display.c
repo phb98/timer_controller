@@ -35,20 +35,28 @@ void display_init()
 
 void* display_mem_malloc(uint32_t num_bytes)
 {
-  return pvPortMalloc(num_bytes);
+  void * p_ret = pvPortMalloc(num_bytes);
+  CONSOLE_LOG_VERBOSE("Allocate %d byte at 0x%x", num_bytes, p_ret);
+  if(!p_ret)
+  {
+    __asm("BKPT #0");
+  }
+  return p_ret;
 }
 
 void display_mem_free(void * const p_mem)
 {
+  CONSOLE_LOG_VERBOSE("Free mem at 0x%x", p_mem);
   vPortFree(p_mem);
 }
 
-void display_thread_post_msg(display_msg_t msg)
+bool display_thread_post_msg(display_msg_t msg)
 {
+  bool ret = false;
   if(!msg.func)
   {
     CONSOLE_LOG_ERROR("Display msg has no function");
-    return;
+    return ret;
   }
   // Allocate new memory if needed
   if(msg.param_size)
@@ -57,7 +65,7 @@ void display_thread_post_msg(display_msg_t msg)
     if(!p_param_mem)
     {
       CONSOLE_LOG_ERROR("Fail to alloc %d bytes, out of heap ?", msg.param_size);
-      return;
+      return ret;
     }
     // Copy param to new allocated memory
     memcpy(p_param_mem, msg.p_param, msg.param_size);
@@ -70,7 +78,10 @@ void display_thread_post_msg(display_msg_t msg)
     CONSOLE_LOG_ERROR("Send Display msg fail");
     // Free the memory if allocated
     if(msg.param_size) display_mem_free(msg.p_param);
+    return ret;
   }
+  ret = true;
+  return ret;
 }
 
 static void display_thread_entry(void* unused_arg)

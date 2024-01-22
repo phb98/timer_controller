@@ -53,8 +53,10 @@ void ux_send_event(ux_event_t evt, const ux_evt_param_t * p_evt_param)
     .param_size = sizeof(ux_msg_t),
     .p_param = &ux_msg
   };
-  display_thread_post_msg(disp_msg);
-
+  if(false == display_thread_post_msg(disp_msg))
+  {
+    display_mem_free(ux_msg.p_param);
+  }
 }
 
 static void ux_process_event(void * p_display_msg)

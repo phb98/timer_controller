@@ -9,7 +9,8 @@ set(MODULE_LIB_LIST "display"
                     "hal_i2c"
                     "rtc"
                     "LFS"
-                    "scheduler")
+                    "scheduler"
+                    "output_controller")
 
 
 # submoudle directory
@@ -20,7 +21,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/hal_i2c)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/rtc)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lfs)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/scheduler)
-
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/output_controller)
 
 
 

@@ -16,6 +16,7 @@
 #include "user_input.h"
 #include "rtc.h"
 #include "littlefs_port.h"
+#include "output_controller.h"
 // Private functions prototype
 void low_level_init();
 TaskHandle_t pico_task_handle = NULL;
@@ -26,6 +27,9 @@ void led_task_pico(void* unused_arg) {
     display_init();
     user_input_init();
     rtc_init();
+    output_controller_init();
+    CONSOLE_LOG_INFO("System Init done");
+
     // Store the Pico LED state
     uint8_t pico_led_state = 0;
     
@@ -59,7 +63,6 @@ int main() {
                                         NULL, 
                                         1, 
                                         &pico_task_handle);
-  CONSOLE_LOG_INFO("System Init done");
   vTaskStartScheduler();
   // Should not reach below since the RTOS will start execute thread now
   while(1)
