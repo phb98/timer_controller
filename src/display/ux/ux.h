@@ -13,6 +13,7 @@ typedef enum
   UX_EVENT_TIME_UPDATE,
   NUM_OF_UX_EVENT
 } ux_event_t;
+struct ux_node_t;
 typedef union
 {
   struct{
@@ -25,6 +26,9 @@ typedef union
   struct{
     rtc_t new_time;
   } time_update;
+  struct{
+    struct ux_node_t * p_previous_node;
+  }switch_into;
 } ux_evt_param_t;
 
 typedef struct ux_node_t

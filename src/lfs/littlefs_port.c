@@ -90,6 +90,9 @@ int test(void) {
 
 void lfs_port_init()
 {
+  uint64_t flash_uuid;
+  flash_get_unique_id((uint8_t*)&flash_uuid);
+  CONSOLE_LOG_INFO("Flash UUID:0x%016llx", flash_uuid);
   CONSOLE_LOG_INFO("Init LittleFS");
   // Create mutex
   #ifdef LFS_THREADSAFE

@@ -44,6 +44,9 @@ void output_controller_init()
     CONSOLE_LOG_DEBUG("Output block %d:start ch:%d, end ch:%d, type:%d", 
                         i, output_block[i].start_ch, output_block[i].end_ch, output_block[i].type);
   }
+  output_controller_set_val(2, 1);
+  output_controller_set_val(1, 1);
+
 }
 void output_controller_set_val(const output_ch_t ch, const output_val_t val)
 {
@@ -94,7 +97,7 @@ void get_block_from_ch(const output_ch_t ch, const output_block_t ** pp_block)
   for(uint8_t i = 0; i < CONFIG_OUTPUT_NUM_BLOCK; i++)
   {
     p_chking_block = &output_block[i];
-    if(p_chking_block->start_ch >= ch && p_chking_block->end_ch <= ch)
+    if(p_chking_block->start_ch <= ch && p_chking_block->end_ch >= ch)
     {
       (*pp_block) = p_chking_block;
       return;

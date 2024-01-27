@@ -77,7 +77,7 @@ static inline user_input_button_t get_button_from_pin(const uint8_t pin)
 
 static void user_input_button_irq_cb(uint pin, uint32_t event_mask)
 {
-  CONSOLE_LOG_VERBOSE("Button pin:%d event:%d", pin, event_mask);
+  //CONSOLE_LOG_VERBOSE("Button pin:%d event:%d", pin, event_mask);
   user_input_button_t button = get_button_from_pin(pin);
   if(button >= NUM_OF_BUTTON) return;
   // Disable interrupt, gpio debouncing state machine will set interrupt again

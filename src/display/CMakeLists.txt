@@ -3,7 +3,8 @@ set(UX_SRC_FILES "ux/ux.c"
                  "ux/ux_startup.c"
                  "ux/ux_timer.c"
                  "ux/ux_mainscreen.c"
-                 "ux/ux_time.c")
+                 "ux/ux_time.c"
+                 "ux/ux_menu.c")
 add_library(${MODULE_DISPLAY_NAME} display.c
                                    display_u8g2_port.c
                                    ${UX_SRC_FILES}

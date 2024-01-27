@@ -23,6 +23,7 @@ static rtc_cb_t cb_table[CONFIG_RTC_MAX_CALLBACK_NUM] = {0};
 static uint16_t num_cb_registered = 0;
 static SemaphoreHandle_t new_time_semphr;
 static TaskHandle_t rtc_thread_handle;
+static rtc_t now;
 // Private function prototype
 static void rtc_thread_entry(void * p_arg);
 static void rtc_driver_new_time_cb();
@@ -102,7 +103,11 @@ void rtc_register_cb(rtc_cb_t cb)
     }
   }
 }
-
+void rtc_get_current(rtc_t * const p_rtc)
+{
+  ASSERT_LOG_ERROR_RETURN(p_rtc, "Invalid param");
+  memcpy(p_rtc, &now, sizeof(rtc_t));
+}
 // Private function
 static void rtc_driver_new_time_cb()
 {
@@ -131,11 +136,10 @@ static void rtc_dispatch(const rtc_t * p_new_time)
 }
 static void rtc_thread_entry(void * p_arg)
 {
-
   while(1)
   {
-    rtc_t now = p_rtc_controller->get_datetime();
     ulTaskNotifyTake(true, portMAX_DELAY);
+    now = p_rtc_controller->get_datetime();
     rtc_dispatch(&now);
   }
 }

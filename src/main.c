@@ -33,23 +33,23 @@ void led_task_pico(void* unused_arg) {
     // Store the Pico LED state
     uint8_t pico_led_state = 0;
     
-    // Configure the Pico's on-board LED
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    
+
     while (true) {
         // Turn Pico LED on an add the LED state
         // to the FreeRTOS xQUEUE
         pico_led_state = 1;
-        gpio_put(PICO_DEFAULT_LED_PIN, pico_led_state);
-        vTaskDelay(10000);
-        
+        for(int i =0 ; i < 8; i++)
+        //output_controller_set_val(i, pico_led_state);
+        vTaskDelay(5000);
+
         // Turn Pico LED off an add the LED state
         // to the FreeRTOS xQUEUE
         pico_led_state = 0;
-        gpio_put(PICO_DEFAULT_LED_PIN, pico_led_state);
-        vTaskDelay(10000);
+        for(int i =0 ; i < 8; i++)
+        //output_controller_set_val(i, pico_led_state);
+        vTaskDelay(5000);
         CONSOLE_LOG_DEBUG("A");
+
         a++;
     }
 }

@@ -29,6 +29,10 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
   ux_node_t * p_node_ret = NULL;
   switch(evt)
   {
+    case UX_EVENT_NODE_SWITCH_INTO:
+    {
+      CONSOLE_LOG_INFO("Switch into node %s", NODE_NAME);
+    }
     default:
       break;
   }

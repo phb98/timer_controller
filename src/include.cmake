@@ -1,4 +1,4 @@
-set(PICO_SDK_LIB_LIST "pico_stdlib" "hardware_i2c" "hardware_flash" "hardware_sync")
+set(PICO_SDK_LIB_LIST "pico_stdlib" "hardware_i2c" "hardware_flash" "hardware_sync" "hardware_pwm")
 set(FREERTOS_LIB "FreeRTOS-Kernel-Heap4")
 
 include_directories(${PROJECT_SOURCE_DIR}/config)

@@ -88,16 +88,11 @@ static void user_input_thread_entry(void * p_param)
 
 void user_input_notify(user_input_type_t type, user_input_value_t * p_value)
 {
-  const char * user_input_type_str[NUM_OF_USER_INPUT_TYPE] = 
-  {
-    "Button", "Encoder"
-  };
   if(type >= NUM_OF_USER_INPUT_TYPE || (!p_value))
   {
     CONSOLE_LOG_ERROR("Invalid user input type:%d", type);
     return;
   }
-  CONSOLE_LOG_VERBOSE("New user input:%s", user_input_type_str[type]);
   user_input_queue_item_t new_input = 
   {
     .type = type,
