@@ -2,10 +2,23 @@
 #include "rtc.h"
 #include "console.h"
 #include <string.h>
+#include "ux_time.h"
 static void rtc_time_cb(const rtc_t * p_new_time);
 void ux_time_init()
 {
   rtc_register_cb(rtc_time_cb);
+}
+
+void ux_time_get_current(ux_rtc_t * const p_rtc)
+{
+  ASSERT_LOG_ERROR_RETURN(p_rtc, "Invalid param");
+  rtc_get_current(p_rtc);
+}
+
+void ux_time_set_current(const ux_rtc_t * const p_rtc)
+{
+  ASSERT_LOG_ERROR_RETURN(p_rtc, "Invalid param");
+  rtc_set_current(p_rtc);
 }
 
 static void rtc_time_cb(const rtc_t * p_new_time)

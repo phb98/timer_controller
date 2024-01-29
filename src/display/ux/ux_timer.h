@@ -5,4 +5,5 @@
 #define UX_TIMER_NAME_LENGTH_MAX  (32)
 void ux_timer_init();
 void ux_timer_start(const char * timer_name, const uint32_t timer_interval_ms);
+void ux_timer_stop(const char * timer_name);
 #endif

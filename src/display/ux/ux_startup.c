@@ -31,7 +31,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
     case UX_EVENT_STARTUP:
       // Return our node to force screen update
       p_node_ret = &ux_startup_node;
-      ux_timer_start("Boot_load_timer", 5000);
+      ux_timer_start("Boot_load_timer", 3000);
       break;
     case UX_EVENT_TIMER_FIRED:
       CONSOLE_LOG_VERBOSE("Receive ux timer fired:%s", p_evt_param->evt_timer.timer_name);

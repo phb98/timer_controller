@@ -83,7 +83,34 @@ void ux_timer_start(const char * timer_name, const uint32_t timer_interval_ms)
   }
   else CONSOLE_LOG_ERROR("Fail to start ux timer:%s, rtos_timer_name:%s", timer_name, pcTimerGetName(p_timer->timer_handle));
 }
+void ux_timer_stop(const char * timer_name)
+{
+  ASSERT_LOG_ERROR_RETURN(timer_name, "Invalid param");
+  ux_timer_t * p_timer = NULL;
+  for(int16_t i = 0; i < NUM_OF_UX_TIMER; i++)
+  {
+    if(strcmp(ux_timer[i].timer_name, timer_name) == 0)
+    {
+      p_timer = &(ux_timer[i]);
+      if(xTimerIsTimerActive(p_timer->timer_handle) == false)
+      {
+        CONSOLE_LOG_WARN("UX timer %s already stop", timer_name);
+        return;
+      }
+      break;
+    }
+  }
+  if(!p_timer)
+  {
+    CONSOLE_LOG_WARN("Can not find timer %s to stop", timer_name);
+    return;
+  }
+  CONSOLE_LOG_DEBUG("Stop ux timer %s", timer_name);
+  xTimerStop(p_timer->timer_handle, portMAX_DELAY);
+  memset(p_timer->timer_name, 0x0, UX_TIMER_NAME_LENGTH_MAX);
+}
 
+// Private function
 static void ux_timer_callback(TimerHandle_t fired_timer)
 {
   // Make sure RTOS not passing garbage
@@ -96,7 +123,8 @@ static void ux_timer_callback(TimerHandle_t fired_timer)
   ux_timer_t *p_timer = (ux_timer_t*)(pvTimerGetTimerID(fired_timer));
   // Send to ux to pass to other
   ux_evt_param_t ux_timer_evt_param;
-  ux_timer_evt_param.evt_timer.timer_name = p_timer->timer_name;
+  memcpy(ux_timer_evt_param.evt_timer.timer_name, p_timer->timer_name, UX_TIMER_NAME_LENGTH_MAX);
+  memset(p_timer->timer_name, 0x0, UX_TIMER_NAME_LENGTH_MAX);
   CONSOLE_LOG_DEBUG("Timer %s fired", p_timer->timer_name);
   ux_send_event(UX_EVENT_TIMER_FIRED, &ux_timer_evt_param);
 }

@@ -109,6 +109,7 @@ static rtc_t ds3231_get_datetime()
 
 static void ds3231_set_datetime(const rtc_t * const p_datetime)
 {
+  ASSERT_LOG_ERROR_RETURN(p_datetime, "Invalid input");
   uint8_t buffer[7] = {
                         bin2bcd(p_datetime->time.second),
                         bin2bcd(p_datetime->time.minute),
@@ -121,7 +122,6 @@ static void ds3231_set_datetime(const rtc_t * const p_datetime)
   write_multi_regs(DS3231_TIMEREG, sizeof(buffer), buffer);
 }
 static void ds3231_reg_new_time_cb(void (*cb)())
-
 {
   ASSERT_LOG_ERROR_RETURN(cb, "Invalid input");
   new_time_cb = cb;

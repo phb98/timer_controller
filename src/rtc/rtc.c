@@ -108,6 +108,13 @@ void rtc_get_current(rtc_t * const p_rtc)
   ASSERT_LOG_ERROR_RETURN(p_rtc, "Invalid param");
   memcpy(p_rtc, &now, sizeof(rtc_t));
 }
+void rtc_set_current(const rtc_t * const p_rtc)
+{
+  ASSERT_LOG_ERROR_RETURN(p_rtc, "Invalid param");
+  ASSERT_LOG_ERROR_RETURN(p_rtc_controller->adjust_datetime, "RTC controller not having adjust func");
+  p_rtc_controller->adjust_datetime(p_rtc);
+  memcpy(&now, p_rtc, sizeof(rtc_t));
+}
 // Private function
 static void rtc_driver_new_time_cb()
 {

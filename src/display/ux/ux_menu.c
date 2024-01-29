@@ -18,6 +18,7 @@ ux_node_t ux_menu_node =
 };
 // Related node
 extern ux_node_t ux_mainscreen_node;
+extern ux_node_t ux_adjust_rtc_node;
 // Private variable
 static uint8_t highlight_idx;
 static bool force_clear_screen = false;
@@ -25,7 +26,7 @@ static ux_node_t * p_node_list[NUM_MENU_ITEM] =
 {
   &ux_mainscreen_node,
   NULL, // Not implement right now
-  NULL, // Not implement right now
+  &ux_adjust_rtc_node,
   NULL, // Not implement right now
   NULL, // Not implement right now
   NULL, // Not implement right now
@@ -93,6 +94,11 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
     }
     default:
       break;
+  }
+  if(p_node_ret != NULL && p_node_ret != &ux_menu_node)
+  {
+    // Stop the ux timer if we swtich to other node
+    ux_timer_stop(SCREEN_TIMEOUT_TIMER);
   }
   return p_node_ret;
 }

@@ -41,7 +41,7 @@
 #define CONFIG_BUTTON_DOWN_PIN               (8)
 #define CONFIG_BUTTON_DOWN_ACTIVE            (0)
 #define CONFIG_BUTTON_DEBOUNCE_MS            (20)
-#define CONFIG_BUTTON_LONG_PRESS_MS          (3000)
+#define CONFIG_BUTTON_LONG_PRESS_MS          (1500)
 // RTC config
 #define CONFIG_RTC_CHIP_DS3231               (1)
 #define CONFIG_RTC_CHIP_USING                (CONFIG_RTC_CHIP_DS3231)

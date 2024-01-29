@@ -36,6 +36,7 @@ typedef struct
 void rtc_init();
 const char* rtc_get_DoW_string(uint8_t day_of_week, bool use_long_string);
 void rtc_get_current(rtc_t * const p_rtc);
+void rtc_set_current(const rtc_t * const p_rtc);
 void rtc_register_cb(rtc_cb_t cb);
 
 #endif

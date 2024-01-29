@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "user_input.h"
 #include "rtc.h"
-
+#include "ux_timer.h"
 typedef enum
 {
   UX_EVENT_STARTUP = 0,
@@ -17,7 +17,7 @@ struct ux_node_t;
 typedef union
 {
   struct{
-    const char * timer_name;
+    char timer_name[UX_TIMER_NAME_LENGTH_MAX];
   } evt_timer;
   struct{
     user_input_button_t button;

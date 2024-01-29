@@ -6,18 +6,20 @@
 #include "bitmap_icons/icon24_24.h"
 #include <string.h>
 #include "sys_config.h"
+#include "ui_draw_list.h"
 // Typedef
 typedef void (*ui_screen_draw_t)(u8g2_t * const, const ui_screen_info_t *);
 // List of all using screen
 static void ui_draw_startup_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 static void ui_draw_mainscreen_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
-
+static void ui_draw_adjust_time_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 const ui_screen_draw_t ui_screen_draw[NUM_OF_UI_SCREEN] = 
 {
   [UI_SCREEN_STARTUP]     = ui_draw_startup_screen,
   [UI_SCREEN_MAINSCREEN]  = ui_draw_mainscreen_screen,
   [UI_SCREEN_MENU]        = ui_draw_menu_screen,
+  [UI_SCREEN_ADJUST_TIME] = ui_draw_adjust_time_screen,
 };
 // Public functions
 
@@ -27,14 +29,14 @@ const ui_screen_draw_t ui_screen_draw[NUM_OF_UI_SCREEN] =
 void ui_update_screen(ui_screen_t screen, const ui_screen_info_t * p_screen_info, bool force_clear)
 {
   u8g2_t * p_u8g2 = display_get_u8g2_handle();
-  if(force_clear)
-  {
-    u8g2_ClearDisplay(p_u8g2);
-  }
   if(!p_u8g2)
   {
     CONSOLE_LOG_ERROR("Fail to get u8g2 handle");
     return;
+  }
+  if(force_clear)
+  {
+    u8g2_ClearDisplay(p_u8g2);
   }
   if(screen > NUM_OF_UI_SCREEN)
   {
@@ -85,12 +87,13 @@ static void ui_draw_mainscreen_screen(u8g2_t * const p_u8g2,  const ui_screen_in
     return;
   }
   char clock_str[16];
-  snprintf(clock_str, sizeof(clock_str), "%02d:%02d", p_screen_info->mainscreen.hour, 
-                                                      p_screen_info->mainscreen.minute);
+  const rtc_t * p_rtc = &(p_screen_info->mainscreen.current_time);
+  snprintf(clock_str, sizeof(clock_str), "%02d%c%02d", p_rtc->time.hour, (p_rtc->time.second % 2) ? ':' : ' ', 
+                                                      p_rtc->time.minute);
   u8g2_ClearBuffer(p_u8g2);
   // Draw the main clock
-  u8g2_SetFont(p_u8g2, u8g2_font_fub30_tf);
-  u8g2_DrawStr(p_u8g2, 12, 42, clock_str);
+  u8g2_SetFont(p_u8g2, u8g2_font_VCR_OSD_tf);
+  u8g2_DrawStr(p_u8g2, 32, 39, clock_str);
 }
 
 static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info)
@@ -140,4 +143,38 @@ static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t *
   // Draw menu text
   u8g2_SetFont(p_u8g2, u8g2_font_6x12_tf);
   u8g2_DrawStr(p_u8g2, X_ALIGN_CENTER(p_text_menu[highlight_idx]), 11, p_text_menu[highlight_idx]);
+}
+
+static void ui_draw_adjust_time_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info)
+{
+  #define VAL_STR_LENGTH (32)
+  ASSERT_LOG_ERROR_RETURN(p_screen_info, "Invalid Param");
+  const char * time_name_str[] = {"Year", "Month", "Day", "DoW", "Hour", "Minute", "Second"};
+  char * p_val_str[7];
+  void * p_val_str_mem = display_mem_malloc(7 * VAL_STR_LENGTH); // 7 item 
+  const rtc_t * p_rtc = &(p_screen_info->adjust_time.current_time);
+  ASSERT_LOG_ERROR_RETURN(p_val_str_mem, "Can not allocate mem");
+  for(int i = 0; i < 7; i++)
+  {
+    (p_val_str)[i] = (uint8_t*)p_val_str_mem + VAL_STR_LENGTH * i;
+    memset(p_val_str[i], 0x0, VAL_STR_LENGTH);
+  }
+  // Print string to buffer to display
+  snprintf(p_val_str[0], VAL_STR_LENGTH, "%d", p_rtc->date.year);
+  snprintf(p_val_str[1], VAL_STR_LENGTH, "%d", p_rtc->date.month);
+  snprintf(p_val_str[2], VAL_STR_LENGTH, "%d", p_rtc->date.day);
+  snprintf(p_val_str[3], VAL_STR_LENGTH, "%s", rtc_get_DoW_string(p_rtc->date.DoW, true));
+  snprintf(p_val_str[4], VAL_STR_LENGTH, "%d", p_rtc->time.hour);
+  snprintf(p_val_str[5], VAL_STR_LENGTH, "%d", p_rtc->time.minute);
+  snprintf(p_val_str[6], VAL_STR_LENGTH, "%d", p_rtc->time.second);
+  ui_draw_list_t list_config = 
+  {
+    .num_item = 7,
+    .highlight_idx = p_screen_info->adjust_time.highlight_idx,
+    .item_names = time_name_str,
+    .item_values = (const char **)p_val_str,
+    .is_selected = p_screen_info->adjust_time.is_selected,
+  };
+  ui_draw_list_screen(p_u8g2, &list_config);
+  display_mem_free(p_val_str_mem);
 }

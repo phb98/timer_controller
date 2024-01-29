@@ -18,7 +18,10 @@ ux_node_t ux_template_node =
   .screen_update = node_draw_scr,
   .node_process = node_process
 };
+// Relating node
+
 // Private variable
+
 // Private function
 static void node_draw_scr()
 {
@@ -32,6 +35,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
     case UX_EVENT_NODE_SWITCH_INTO:
     {
       CONSOLE_LOG_INFO("Switch into node %s", NODE_NAME);
+      break;
     }
     default:
       break;
