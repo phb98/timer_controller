@@ -44,8 +44,6 @@ void output_controller_init()
     CONSOLE_LOG_DEBUG("Output block %d:start ch:%d, end ch:%d, type:%d", 
                         i, output_block[i].start_ch, output_block[i].end_ch, output_block[i].type);
   }
-  output_controller_set_val(2, 1);
-  output_controller_set_val(1, 1);
 
 }
 void output_controller_set_val(const output_ch_t ch, const output_val_t val)

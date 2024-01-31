@@ -28,6 +28,7 @@ void led_task_pico(void* unused_arg) {
     user_input_init();
     rtc_init();
     output_controller_init();
+    sheduler_init(); // Must after littleFS since it will use file system
     CONSOLE_LOG_INFO("System Init done");
 
     // Store the Pico LED state

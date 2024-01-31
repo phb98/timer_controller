@@ -7,3 +7,6 @@
 [submodule "src/lfs/littlefs"]
 	path = src/lfs/littlefs
 	url = https://github.com/littlefs-project/littlefs.git
+[submodule "src/coreJSON"]
+	path = src/coreJSON
+	url = https://github.com/FreeRTOS/coreJSON.git

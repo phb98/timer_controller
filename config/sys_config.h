@@ -14,7 +14,7 @@
 // display config
 #define DISPLAY_SSD1306_OLED                (0)
 #define DISPLAY_ST7567_LCD                  (1)
-#define CONFIG_DISPLAY_USE                  DISPLAY_ST7567_LCD
+#define CONFIG_DISPLAY_USE                  DISPLAY_SSD1306_OLED
 #define CONFIG_DISPLAY_I2C                  (HAL_I2C0)
 #define CONFIG_DISPLAY_I2C_SPEED            (400*1000)
 #define CONFIG_DISPLAY_ORIENTATION          (U8G2_R2) // U8G2_Rx, x= 0 or 2

@@ -115,6 +115,16 @@ void rtc_set_current(const rtc_t * const p_rtc)
   p_rtc_controller->adjust_datetime(p_rtc);
   memcpy(&now, p_rtc, sizeof(rtc_t));
 }
+
+bool rtc_is_earlier(const rtc_t *p_rtc_A, const rtc_t *p_rtc_B) 
+{
+  if (p_rtc_A->date.year != p_rtc_B->date.year)     return p_rtc_A->date.year < p_rtc_B->date.year;
+  if (p_rtc_A->date.month != p_rtc_B->date.month)   return p_rtc_A->date.month < p_rtc_B->date.month;
+  if (p_rtc_A->date.day != p_rtc_B->date.day)       return p_rtc_A->date.day < p_rtc_B->date.day;
+  if (p_rtc_A->time.hour != p_rtc_B->time.hour)     return p_rtc_A->time.hour < p_rtc_B->time.hour;
+  if (p_rtc_A->time.minute != p_rtc_B->time.minute) return p_rtc_A->time.minute < p_rtc_B->time.minute;
+  return p_rtc_A->time.second < p_rtc_B->time.second;
+}
 // Private function
 static void rtc_driver_new_time_cb()
 {

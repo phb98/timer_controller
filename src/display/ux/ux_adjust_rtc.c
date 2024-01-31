@@ -37,11 +37,12 @@ typedef enum
   NUM_OF_RTC_SETTING,
 } rtc_setting_t;
 static ui_screen_info_t screen_info;
-static bool is_changing_val = false;
-static ux_rtc_t changing_rtc;
-static ux_node_t * p_previous_node = NULL;
-static bool force_clear_screen = false;
-static uint8_t changing_idx = 0;
+static bool         is_changing_val = false;
+static ux_rtc_t     changing_rtc;
+static ux_node_t *  p_previous_node = NULL;
+static bool         force_clear_screen = false;
+static uint8_t      changing_idx = 0;
+static bool         need_applying_rtc = false; // Flag to tell if we need to save new rtc. Sometime we accident enter this node, save RTC will apply old time to rtc if we try to exit
 // Private function
 static void chaning_single_rtc_setting(rtc_t * p_rtc, const rtc_setting_t setting, const int32_t new_val);
 static int32_t get_single_rtc_val(const rtc_t * p_rtc, rtc_setting_t setting);
@@ -76,6 +77,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
       // Reset variable
       is_changing_val = false;
       force_clear_screen = true;
+      need_applying_rtc = false;
       break;
     }
     case UX_EVENT_BUTTON:
@@ -84,7 +86,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
       {
         // Save RTC and
         // Back to previous screen
-        rtc_set_current(&changing_rtc);
+        if(need_applying_rtc) rtc_set_current(&changing_rtc);
         p_node_ret = p_previous_node;
       }
       else if(p_evt_param->button.evt == BUTTON_EVT_CLICK)
@@ -102,6 +104,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
             ux_utility_adjust_var_wrap_t wrap_config = get_wrap_config_from_rtc_setting(changing_idx);
             temp = ux_utility_adjust_var_wrapping(&wrap_config, temp, 1);
             chaning_single_rtc_setting(&changing_rtc, changing_idx, temp);
+            need_applying_rtc = true;
           }
         }
         else if(p_evt_param->button.button == BUTTON_DOWN)
@@ -113,6 +116,7 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
             ux_utility_adjust_var_wrap_t wrap_config = get_wrap_config_from_rtc_setting(changing_idx);
             temp = ux_utility_adjust_var_wrapping(&wrap_config, temp, -1);
             chaning_single_rtc_setting(&changing_rtc, changing_idx, temp);
+            need_applying_rtc = true;
           }
         }
         p_node_ret = node_self;

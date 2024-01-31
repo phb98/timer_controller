@@ -1,6 +1,6 @@
 set(PICO_SDK_LIB_LIST "pico_stdlib" "hardware_i2c" "hardware_flash" "hardware_sync" "hardware_pwm")
 set(FREERTOS_LIB "FreeRTOS-Kernel-Heap4")
-
+include(${PROJECT_SOURCE_DIR}/src/coreJSON/jsonFilePaths.cmake)
 include_directories(${PROJECT_SOURCE_DIR}/config)
 include_directories(${PROJECT_SOURCE_DIR}/src/console)
 include_directories(${PROJECT_SOURCE_DIR}/src/display)
@@ -12,6 +12,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/rtc)
 include_directories(${PROJECT_SOURCE_DIR}/src/lfs)
 include_directories(${PROJECT_SOURCE_DIR}/src/scheduler)
 include_directories(${PROJECT_SOURCE_DIR}/src/output_controller)
+include_directories(${PROJECT_SOURCE_DIR}/src/coreJSON/source/include)
 
 
 

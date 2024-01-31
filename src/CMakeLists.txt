@@ -1,16 +1,12 @@
-# Glob all main source files
-file(GLOB C_MAIN_SOURCES *.c)
-# Main executable(elf file)
-add_executable(${PROJECT_NAME} ${C_MAIN_SOURCES})
 include(include.cmake)
 set(MODULE_LIB_LIST "display"
-                    "console"
-                    "user_input"
-                    "hal_i2c"
-                    "rtc"
-                    "LFS"
-                    "scheduler"
-                    "output_controller")
+"console"
+"user_input"
+"hal_i2c"
+"rtc"
+"LFS"
+"scheduler"
+"output_controller")
 
 
 # submoudle directory
@@ -23,11 +19,18 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lfs)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/scheduler)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/output_controller)
 
+# Glob all main source files
+file(GLOB C_MAIN_SOURCES *.c)
+# Main executable(elf file)
+add_executable(${PROJECT_NAME} ${C_MAIN_SOURCES})
 
+# coreJSON library
+add_library(coreJSON ${JSON_SOURCES})
 
 # Link using library
 target_link_libraries(${PROJECT_NAME} ${PICO_SDK_LIB_LIST} ${FREERTOS_LIB})
 target_link_libraries(${PROJECT_NAME} ${MODULE_LIB_LIST})
+target_link_libraries(${PROJECT_NAME} coreJSON)
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${PROJECT_NAME})
 pico_enable_stdio_usb(${PROJECT_NAME} 0)
