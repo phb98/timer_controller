@@ -15,6 +15,6 @@ endif()
 
 # Initialize the SDK
 pico_sdk_init()
-add_compile_options(-fdata-sections -ffunction-sections -Wl,--gc-sections -O0 )
+add_compile_options(-fdata-sections -ffunction-sections -Wl,--gc-sections -O0 -Wreturn-type)
 add_compile_definitions("PICO_FLASH_SIZE_BYTES=(16*1024*1024)")
 add_subdirectory(src)

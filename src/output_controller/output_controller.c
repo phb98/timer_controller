@@ -70,6 +70,7 @@ output_val_t output_controller_get_val(const output_ch_t ch)
   output_ch_t driver_ch = ch - p_output_block->start_ch;
   ret_val =  p_output_block->get_driver()->get(driver_ch);
   CONSOLE_LOG_DEBUG("get channel %d, val: %d", ch, ret_val);
+  return ret_val;
 }
 output_type_t output_controller_get_type(const output_ch_t ch)
 {

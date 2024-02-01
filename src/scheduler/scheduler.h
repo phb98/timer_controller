@@ -14,8 +14,8 @@ typedef union
 {
   struct {
     output_ch_t   channel;
-    output_val_t  val;
-  }action;
+    output_val_t  value;
+  }output;
 } scheduler_action_param_t;
 typedef struct
 {
