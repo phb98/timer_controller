@@ -2,6 +2,7 @@
 #include "console.h"
 #include "ui.h"
 #include "ux_timer.h"
+#include "ux_utility.h"
 #define NODE_NAME               "MENU"
 #define NUM_MENU_ITEM           (6)
 #define SCREEN_TIMEOUT_MS       (30000)
@@ -22,6 +23,13 @@ extern ux_node_t ux_adjust_rtc_node;
 // Private variable
 static uint8_t highlight_idx;
 static bool force_clear_screen = false;
+static const ux_utility_adjust_var_wrap_t wrap_config = 
+{
+  .lower_bound = 0,
+  .upper_bound = NUM_MENU_ITEM - 1,
+  .low_wrap = true,
+  .up_wrap  = true
+};
 static ux_node_t * p_node_list[NUM_MENU_ITEM] = 
 {
   &ux_mainscreen_node,
@@ -74,12 +82,12 @@ static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_par
       }
       else if(p_evt_param->button.button == BUTTON_UP && p_evt_param->button.evt == BUTTON_EVT_CLICK)
       {
-        highlight_idx = (highlight_idx + 1) % NUM_MENU_ITEM;
+        highlight_idx = ux_utility_adjust_var_wrapping(&wrap_config, highlight_idx, 1);
         p_node_ret = &ux_menu_node;
       }
       else if(p_evt_param->button.button == BUTTON_DOWN && p_evt_param->button.evt == BUTTON_EVT_CLICK)
       {
-        highlight_idx = (highlight_idx == 0 ? NUM_MENU_ITEM - 1 : highlight_idx - 1);
+        highlight_idx = ux_utility_adjust_var_wrapping(&wrap_config, highlight_idx, -1);
         p_node_ret = &ux_menu_node;
       }
       break;

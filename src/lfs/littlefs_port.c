@@ -3,6 +3,7 @@
 #include "sys_config.h"
 #include <hardware/flash.h>
 #include <hardware/sync.h>
+#define MODULE_CONSOLE_LOG_LEVEL CONSOLE_LOG_LEVEL_DEBUG
 #include "console.h"
 #ifdef LFS_THREADSAFE
 #define MUTEX_BLOCK_TIME_MS (MS_TO_TICK_RTOS(5000))
@@ -54,39 +55,38 @@ const struct lfs_config cfg = {
     .lookahead_buffer   = look_ahead_cache,
 };
 
-// entry point
-int test(void) {
-    lfs_file_t file;
+// int test(void) {
+//     lfs_file_t file;
 
-    // mount the filesystem
-    int err = lfs_mount(&lfs, &cfg);
+//     // mount the filesystem
+//     int err = lfs_mount(&lfs, &cfg);
 
-    // reformat if we can't mount the filesystem
-    // this should only happen on the first boot
-    if (err) {
-        lfs_format(&lfs, &cfg);
-        lfs_mount(&lfs, &cfg);
-    }
+//     // reformat if we can't mount the filesystem
+//     // this should only happen on the first boot
+//     if (err) {
+//         lfs_format(&lfs, &cfg);
+//         lfs_mount(&lfs, &cfg);
+//     }
 
-    // read current count
-    uint32_t boot_count = 0;
-    lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
-    lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
+//     // read current count
+//     uint32_t boot_count = 0;
+//     lfs_file_open(&lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
+//     lfs_file_read(&lfs, &file, &boot_count, sizeof(boot_count));
 
-    // update boot count
-    boot_count += 1;
-    lfs_file_rewind(&lfs, &file);
-    lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
+//     // update boot count
+//     boot_count += 1;
+//     lfs_file_rewind(&lfs, &file);
+//     lfs_file_write(&lfs, &file, &boot_count, sizeof(boot_count));
 
-    // remember the storage is not updated until the file is closed successfully
-    lfs_file_close(&lfs, &file);
+//     // remember the storage is not updated until the file is closed successfully
+//     lfs_file_close(&lfs, &file);
 
-    // release any resources we were using
-    lfs_unmount(&lfs);
+//     // release any resources we were using
+//     lfs_unmount(&lfs);
 
-    // print the boot count
-    printf("boot_count: %d\n", boot_count);
-}
+//     // print the boot count
+//     printf("boot_count: %d\n", boot_count);
+// }
 
 void lfs_port_init()
 {
@@ -108,11 +108,45 @@ void lfs_port_init()
     lfs_format(&lfs, &cfg);
     lfs_mount(&lfs, &cfg);
   }
+  // Create system folder
+  int lfs_ret = lfs_mkdir(&lfs, "/System");
+  CONSOLE_LOG_INFO("Create System folder:%s", lfs_port_get_err_string(lfs_ret));
 }
 
 lfs_t * lfs_port_get_lfs_handle()
 {
   return &lfs;
+}
+
+const char * lfs_port_get_err_string(const int err)
+{
+  static const char * err_str[] = {
+    "LFS_ERR_OK",         
+    "LFS_ERR_IO",         
+    "LFS_ERR_CORRUPT",    
+    "LFS_ERR_NOENT",      
+    "LFS_ERR_EXIST",      
+    "LFS_ERR_NOTDIR",     
+    "LFS_ERR_ISDIR",      
+    "LFS_ERR_NOTEMPTY",   
+    "LFS_ERR_BADF",       
+    "LFS_ERR_FBIG",       
+    "LFS_ERR_INVAL",      
+    "LFS_ERR_NOSPC",      
+    "LFS_ERR_NOMEM",      
+    "LFS_ERR_NOATTR",     
+    "LFS_ERR_NAMETOOLONG",
+  };
+  static const char * unknow_err_str = "LFS_ERR_UNKNOWN";
+  const int err_idx[] = {0,-5,-84,-2,-17,-20,-21,-39,-9,-27,-22,-28,-12,-61,-36};
+  for(int i = 0; i < (sizeof(err_idx) / sizeof(err_idx[0])); i++)
+  {
+    if(err_idx[i] == err)
+    {
+      return err_str[i];
+    }
+  }
+  return unknow_err_str;
 }
 // PORTING 
 

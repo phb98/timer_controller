@@ -13,4 +13,9 @@ size_t add_RTC_to_JSON_string(char * p_json_string, size_t max_json_length, cons
 size_t add_scheduler_action_to_JSON_string(char * p_json_string, size_t max_json_length, const scheduler_action_t action, const scheduler_action_param_t * p_param, bool is_first);
 size_t add_string_to_JSON_string(char * p_json_string, size_t max_json_length, const char * const p_key, const char * const p_string, bool is_first);
 size_t add_scheduler_to_JSON_string(char * p_json_buff, size_t max_json_length, const scheduler_t * const p_scheduler);
+
+bool JSON_query_number(const char * const p_json_buff, const size_t json_len, const char * const p_query_str, int32_t * const p_value);
+bool JSON_query_RTC(const char * const p_json_buff, const size_t json_len, const char * const p_query_str, rtc_t * const p_rtc);
+bool JSON_query_action(const char * const p_json_buff, const size_t json_len, const char * const p_query_str, scheduler_action_t * p_action_type, scheduler_action_param_t * p_act_param);
+bool JSON_to_scheduler(scheduler_t * const p_scheduler, const char * const p_json_str, const size_t json_len);
 #endif

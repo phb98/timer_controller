@@ -7,9 +7,11 @@ typedef uint8_t scheduler_dow_mask_t;   // 0x00: daily, 0xFF: 1 shot, not implem
 typedef uint16_t scheduler_month_mask_t; // 0x00: Every month, 0xffff: 1 shot, not immplement for now
 typedef enum
 {
-  SCHEDULER_ACTION_OUTPUT = 1,
+  SCHEDULER_ACTION_OUTPUT = 0,
   NUM_OF_SCHEDULER_ACTION
 } scheduler_action_t;
+extern const char* scheduler_action_str[]; //just declaration
+
 typedef union
 {
   struct {
@@ -25,6 +27,14 @@ typedef struct
   scheduler_action_t         action;
   scheduler_action_param_t   act_param;
 } scheduler_t;
+typedef enum
+{
+  SCHEDULER_OK = 0,
+  SCHEDULER_ERR_PARAM,
+  SCHEDULER_ERR_DUPLICATE,
+  SCHEDULER_ERR_INTERNAL,
+} scheduler_ret_t;
 void sheduler_init();
-void scheduler_new(const scheduler_t * const p_new_scheduler);
+scheduler_ret_t scheduler_new(const scheduler_t * const p_new_scheduler);
+scheduler_ret_t is_scheduler_exist(const scheduler_t * const p_scheduler);
 #endif

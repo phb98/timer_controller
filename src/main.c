@@ -17,6 +17,7 @@
 #include "rtc.h"
 #include "littlefs_port.h"
 #include "output_controller.h"
+#include "scheduler.h"
 // Private functions prototype
 void low_level_init();
 TaskHandle_t pico_task_handle = NULL;
@@ -60,9 +61,9 @@ int main() {
   CONSOLE_LOG_INFO("Begin system init");
   BaseType_t pico_status = xTaskCreate(led_task_pico, 
                                         "PICO_LED_TASK", 
-                                        1024, 
+                                        2048, 
                                         NULL, 
-                                        1, 
+                                        configMAX_PRIORITIES-1, 
                                         &pico_task_handle);
   vTaskStartScheduler();
   // Should not reach below since the RTOS will start execute thread now

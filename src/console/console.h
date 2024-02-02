@@ -64,6 +64,11 @@
                                             return;\
                                             }\
                                           } while(0)
-
+#define ASSERT_LOG_ERROR_RETURN_VAL(a, val, ...) do{\
+                                           if(!(a)) {\
+                                            CONSOLE_LOG_ERROR(__VA_ARGS__);\
+                                            return val;\
+                                            }\
+                                          } while(0)
 uint32_t console_get_time_ms();
 #endif
