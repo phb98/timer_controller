@@ -22,8 +22,15 @@ void ui_draw_list_screen(u8g2_t * const p_u8g2,  const ui_draw_list_t * p_list_i
   u8g2_SetFontMode(p_u8g2, 1); // Transparent since it looks better
   u8g2_SetDrawColor(p_u8g2, 1);
   for(int i = 0; i < NUM_ITEM_PER_SCREEN; i++)
-  {
-    snprintf(line_buffer, sizeof(line_buffer), "-%s:%s", p_item_text, p_item_val);
+  { 
+    if(strlen(p_item_text) == 0 || strlen(p_item_val) == 0)
+    {
+      snprintf(line_buffer, sizeof(line_buffer), "-%s", strlen(p_item_text) == 0 ? p_item_val : p_item_text);
+    }
+    else
+    {
+      snprintf(line_buffer, sizeof(line_buffer), "-%s:%s", p_item_text, p_item_val);
+    }
     CONSOLE_LOG_VERBOSE("Text List:%s", line_buffer);
     if(draw_idx == p_list_info->highlight_idx)
     {

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "rtc.h"
-typedef uint16_t output_ch_t;
+typedef uint32_t output_ch_t;
 typedef uint32_t output_val_t;
 #define OUTPUT_CONTROLLER_MAX_VAL   (1023)
 typedef enum 

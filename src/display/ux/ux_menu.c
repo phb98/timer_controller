@@ -20,6 +20,7 @@ ux_node_t ux_menu_node =
 // Related node
 extern ux_node_t ux_mainscreen_node;
 extern ux_node_t ux_adjust_rtc_node;
+extern ux_node_t ux_adjust_timer_node;
 // Private variable
 static uint8_t highlight_idx;
 static bool force_clear_screen = false;
@@ -33,7 +34,7 @@ static const ux_utility_adjust_var_wrap_t wrap_config =
 static ux_node_t * p_node_list[NUM_MENU_ITEM] = 
 {
   &ux_mainscreen_node,
-  NULL, // Not implement right now
+  &ux_adjust_timer_node,
   &ux_adjust_rtc_node,
   NULL, // Not implement right now
   NULL, // Not implement right now

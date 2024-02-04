@@ -6,7 +6,8 @@ set(UX_SRC_FILES "ux/ux.c"
                  "ux/ux_time.c"
                  "ux/ux_menu.c"
                  "ux/ux_utility.c"
-                 "ux/ux_adjust_rtc.c")
+                 "ux/ux_adjust_rtc.c"
+                 "ux/ux_adjust_timer.c")
 set(UI_SRC_FILES "ui/ui.c"
                  "ui/ui_draw_list.c")
 add_library(${MODULE_DISPLAY_NAME} display.c

@@ -7,6 +7,8 @@
 #include <string.h>
 #include "sys_config.h"
 #include "ui_draw_list.h"
+#define X_ALIGN_CENTER(t) ((128 - (u8g2_GetUTF8Width(p_u8g2, t))) / 2)
+
 // Typedef
 typedef void (*ui_screen_draw_t)(u8g2_t * const, const ui_screen_info_t *);
 // List of all using screen
@@ -14,12 +16,14 @@ static void ui_draw_startup_screen(u8g2_t * const p_u8g2,  const ui_screen_info_
 static void ui_draw_mainscreen_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 static void ui_draw_adjust_time_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
+static void ui_draw_adjust_timer_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info);
 const ui_screen_draw_t ui_screen_draw[NUM_OF_UI_SCREEN] = 
 {
-  [UI_SCREEN_STARTUP]     = ui_draw_startup_screen,
-  [UI_SCREEN_MAINSCREEN]  = ui_draw_mainscreen_screen,
-  [UI_SCREEN_MENU]        = ui_draw_menu_screen,
-  [UI_SCREEN_ADJUST_TIME] = ui_draw_adjust_time_screen,
+  [UI_SCREEN_STARTUP]       = ui_draw_startup_screen,
+  [UI_SCREEN_MAINSCREEN]    = ui_draw_mainscreen_screen,
+  [UI_SCREEN_MENU]          = ui_draw_menu_screen,
+  [UI_SCREEN_ADJUST_TIME]   = ui_draw_adjust_time_screen,
+  [UI_SCREEN_ADJUST_TIMER]  = ui_draw_adjust_timer_screen,
 };
 // Public functions
 
@@ -86,7 +90,7 @@ static void ui_draw_mainscreen_screen(u8g2_t * const p_u8g2,  const ui_screen_in
     CONSOLE_LOG_ERROR("Can not draw mainscreen without info");
     return;
   }
-  char clock_str[16];
+  char clock_str[32];
   const rtc_t * p_rtc = &(p_screen_info->mainscreen.current_time);
   snprintf(clock_str, sizeof(clock_str), "%02d%c%02d", p_rtc->time.hour, (p_rtc->time.second % 2) ? ':' : ' ', 
                                                       p_rtc->time.minute);
@@ -94,6 +98,11 @@ static void ui_draw_mainscreen_screen(u8g2_t * const p_u8g2,  const ui_screen_in
   // Draw the main clock
   u8g2_SetFont(p_u8g2, u8g2_font_VCR_OSD_tf);
   u8g2_DrawStr(p_u8g2, 32, 39, clock_str);
+  // Draw date
+  snprintf(clock_str, sizeof(clock_str), "%s,%02d-%02d-%02d", rtc_get_DoW_string(p_rtc->date.DoW, true), p_rtc->date.day, p_rtc->date.month, p_rtc->date.year);
+  u8g2_SetFont(p_u8g2, u8g2_font_6x10_tf);
+  u8g2_DrawStr(p_u8g2, X_ALIGN_CENTER(clock_str), 50, clock_str);
+
 }
 
 static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info)
@@ -105,7 +114,6 @@ static void ui_draw_menu_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t *
   #define X_GAP       (8)
   #define START_Y     (13)
   #define Y_GAP       (2)
-  #define X_ALIGN_CENTER(t) ((128 - (u8g2_GetUTF8Width(p_u8g2, t))) / 2)
   if(!p_screen_info)
   {
     CONSOLE_LOG_ERROR("Can not draw menuscreen without info");
@@ -177,4 +185,108 @@ static void ui_draw_adjust_time_screen(u8g2_t * const p_u8g2,  const ui_screen_i
   };
   ui_draw_list_screen(p_u8g2, &list_config);
   display_mem_free(p_val_str_mem);
+}
+static void ui_draw_adjust_timer_screen(u8g2_t * const p_u8g2,  const ui_screen_info_t * p_screen_info)
+{
+  char text_str[32] = {0};
+  switch(p_screen_info->edit_timer.ux_current_state)
+  {
+    case 0: // CHOOSING_OUTPUT
+    {
+      // Draw the choose timer layour
+      u8g2_ClearBuffer(p_u8g2);
+      u8g2_SetFont(p_u8g2, u8g2_font_6x12_tf);
+      snprintf(text_str, sizeof(text_str), "%s", "Choose Output");
+      u8g2_DrawStr(p_u8g2, X_ALIGN_CENTER(text_str), 10, text_str);
+      u8g2_SetFont(p_u8g2, u8g2_font_profont29_tf);
+      snprintf(text_str, sizeof(text_str), "%d", p_screen_info->edit_timer.chosen_output);
+      u8g2_DrawStr(p_u8g2, X_ALIGN_CENTER(text_str), 40, text_str);
+    }
+    break;
+    case 1: // LIST_TIMER
+    {
+      #define NUM_MAX_LINE      (6)
+      const char * item_name_str[NUM_MAX_LINE] = {0};
+      char * val_str[NUM_MAX_LINE];
+      uint8_t * p_mem_malloc = display_mem_malloc(NUM_MAX_LINE * 32);
+      if(!p_mem_malloc)
+      {
+        CONSOLE_LOG_ERROR("Fail to alloc mem");
+        break;
+      }
+      for(int i = 0; i < NUM_MAX_LINE; i++)
+      {
+        val_str[i] = p_mem_malloc + i*32;
+        memset(val_str[i], 0x0, 32);
+      }
+      for(int i = 0; (i < NUM_MAX_LINE) && (i < p_screen_info->edit_timer.num_timers_listed); i++)
+      {
+        const rtc_t * p_trig_time = &(p_screen_info->edit_timer.p_timer_list[i].trig_time);
+        output_val_t out_val = p_screen_info->edit_timer.p_timer_list[i].act_param.output.value; 
+        snprintf(val_str[i], 32, "%02d:%02d:%02d, val:%lu", p_trig_time->time.hour, p_trig_time->time.minute, p_trig_time->time.second, 
+                                                              out_val);
+      }
+      if(p_screen_info->edit_timer.num_timers_listed < NUM_MAX_LINE)
+      {
+        snprintf(val_str[p_screen_info->edit_timer.num_timers_listed], 32, "Add new timer");
+      }
+      ui_draw_list_t list_config = 
+      {
+        .num_item      = p_screen_info->edit_timer.num_timers_listed + (p_screen_info->edit_timer.num_timers_listed < NUM_MAX_LINE ? 1:0),
+        .highlight_idx = p_screen_info->edit_timer.highlight_idx % (NUM_MAX_LINE),
+        .item_names    = item_name_str,
+        .item_values   = (const char **)val_str,
+        .is_selected   = false,
+      };
+      ui_draw_list_screen(p_u8g2, &list_config);
+      display_mem_free(p_mem_malloc);
+    }
+    break;
+    case 2: // EDIT TIMER
+    {
+      const char * item_name_str[] = {
+        "Trigger Hour",
+        "Trigger Minute",
+        "Trigger Second",
+        "DOW repeat",
+        "Month repeat",
+        "Output Value",
+        "Delete timer"
+      };
+      const int num_item = sizeof(item_name_str) / sizeof(item_name_str[0]);
+      char * item_val_str[num_item];
+      uint8_t * p_mem_malloc = display_mem_malloc(num_item * 32);
+      const scheduler_t * p_sch = p_screen_info->edit_timer.p_edit_timer;
+      if(!p_mem_malloc)
+      {
+        CONSOLE_LOG_ERROR("Fail to alloc mem");
+        break;
+      }
+      for(int i = 0; i < num_item; i++)
+      {
+        item_val_str[i] = p_mem_malloc + i*32;
+        memset(item_val_str[i], 0x0, 32);
+      }
+      // 
+      {
+        snprintf(item_val_str[0], 32, "%02d", p_sch->trig_time.time.hour);
+        snprintf(item_val_str[1], 32, "%02d", p_sch->trig_time.time.minute);
+        snprintf(item_val_str[2], 32, "%02d", p_sch->trig_time.time.second);
+        snprintf(item_val_str[3], 32, "%02d", p_sch->dow_mask);
+        snprintf(item_val_str[4], 32, "%02d", p_sch->month_mask);
+        snprintf(item_val_str[5], 32, "%02d", p_sch->act_param.output.value);
+      }
+      ui_draw_list_t list_config = 
+      {
+        .num_item      = num_item + (p_screen_info->edit_timer.is_adding_timer > 0),
+        .highlight_idx = p_screen_info->edit_timer.highlight_idx,
+        .item_names    = item_name_str,
+        .item_values   = (const char **)item_val_str,
+        .is_selected   = p_screen_info->edit_timer.is_editing_timer_param,
+      };
+      ui_draw_list_screen(p_u8g2, &list_config);      
+      display_mem_free(p_mem_malloc);
+    }
+    break;
+  }
 }

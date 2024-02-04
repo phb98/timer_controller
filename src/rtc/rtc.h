@@ -39,5 +39,5 @@ void rtc_get_current(rtc_t * const p_rtc);
 void rtc_set_current(const rtc_t * const p_rtc);
 void rtc_register_cb(rtc_cb_t cb);
 bool rtc_is_earlier(const rtc_t *p_rtc_A, const rtc_t *p_rtc_B);
-
+bool rtc_is_equal(const rtc_t *p_rtc_A, const rtc_t *p_rtc_B);
 #endif

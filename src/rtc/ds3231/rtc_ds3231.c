@@ -95,7 +95,7 @@ static rtc_t ds3231_get_datetime()
     ret.date.year   = bcd2bin(raw_time[6]) + 2000U;
     ret.date.month  = bcd2bin(raw_time[5] & 0x7F);
     ret.date.day    = bcd2bin(raw_time[4]);
-    ret.date.DoW    = bcd2bin(raw_time[3]);
+    ret.date.DoW    = bcd2bin(raw_time[3]) - 1;// the DoW in system is from 0 to 6, but in ds3231 it's 1 to 7
     ret.time.hour   = bcd2bin(raw_time[2]);
     ret.time.minute = bcd2bin(raw_time[1]);
     ret.time.second = bcd2bin(raw_time[0] & 0x7F);
@@ -110,11 +110,12 @@ static rtc_t ds3231_get_datetime()
 static void ds3231_set_datetime(const rtc_t * const p_datetime)
 {
   ASSERT_LOG_ERROR_RETURN(p_datetime, "Invalid input");
+  uint8_t dow = p_datetime->date.DoW + 1; // the DoW in system is from 0 to 6, but in ds3231 it's 1 to 7
   uint8_t buffer[7] = {
                         bin2bcd(p_datetime->time.second),
                         bin2bcd(p_datetime->time.minute),
                         bin2bcd(p_datetime->time.hour),
-                        bin2bcd(p_datetime->date.DoW),
+                        bin2bcd(dow),
                         bin2bcd(p_datetime->date.day),
                         bin2bcd(p_datetime->date.month),
                         bin2bcd(p_datetime->date.year - 2000)

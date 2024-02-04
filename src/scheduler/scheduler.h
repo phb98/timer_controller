@@ -21,6 +21,7 @@ typedef union
 } scheduler_action_param_t;
 typedef struct
 {
+  uint32_t                   id;
   rtc_t                      trig_time;
   scheduler_dow_mask_t       dow_mask;
   scheduler_month_mask_t     month_mask;
@@ -33,8 +34,9 @@ typedef enum
   SCHEDULER_ERR_PARAM,
   SCHEDULER_ERR_DUPLICATE,
   SCHEDULER_ERR_INTERNAL,
+  SCHEDULER_ERR_NOT_FOUND,
 } scheduler_ret_t;
 void sheduler_init();
 scheduler_ret_t scheduler_new(const scheduler_t * const p_new_scheduler);
-scheduler_ret_t is_scheduler_exist(const scheduler_t * const p_scheduler);
+scheduler_ret_t scheduler_modify(scheduler_t * const p_new_scheduler, uint32_t id);
 #endif

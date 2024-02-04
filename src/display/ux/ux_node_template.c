@@ -7,7 +7,7 @@
 #include "ui.h"
 #include "ux_timer.h"
 #define NODE_NAME "NODE_TEMPLATE"
-
+#define NODE_SELF (&ux_template_node)
 // Private function prototype
 static void        node_draw_scr();
 static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_param);

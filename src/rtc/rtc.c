@@ -118,12 +118,23 @@ void rtc_set_current(const rtc_t * const p_rtc)
 
 bool rtc_is_earlier(const rtc_t *p_rtc_A, const rtc_t *p_rtc_B) 
 {
+  ASSERT_LOG_ERROR_RETURN_VAL((p_rtc_A && p_rtc_B), false, "Invalid param");
   if (p_rtc_A->date.year != p_rtc_B->date.year)     return p_rtc_A->date.year < p_rtc_B->date.year;
   if (p_rtc_A->date.month != p_rtc_B->date.month)   return p_rtc_A->date.month < p_rtc_B->date.month;
   if (p_rtc_A->date.day != p_rtc_B->date.day)       return p_rtc_A->date.day < p_rtc_B->date.day;
   if (p_rtc_A->time.hour != p_rtc_B->time.hour)     return p_rtc_A->time.hour < p_rtc_B->time.hour;
   if (p_rtc_A->time.minute != p_rtc_B->time.minute) return p_rtc_A->time.minute < p_rtc_B->time.minute;
   return p_rtc_A->time.second < p_rtc_B->time.second;
+}
+bool rtc_is_equal(const rtc_t *p_rtc_A, const rtc_t *p_rtc_B)
+{
+  ASSERT_LOG_ERROR_RETURN_VAL((p_rtc_A && p_rtc_B), false, "Invalid param");
+  if (p_rtc_A->date.year != p_rtc_B->date.year)     return false;
+  if (p_rtc_A->date.month != p_rtc_B->date.month)   return false;
+  if (p_rtc_A->date.day != p_rtc_B->date.day)       return false;
+  if (p_rtc_A->time.hour != p_rtc_B->time.hour)     return false;
+  if (p_rtc_A->time.minute != p_rtc_B->time.minute) return false;
+  return p_rtc_A->time.second == p_rtc_B->time.second;
 }
 // Private function
 static void rtc_driver_new_time_cb()

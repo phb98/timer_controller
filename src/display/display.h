@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "u8g2.h"
 #include <stdbool.h>
-#define DISPLAY_THREAD_STACK_SIZE     (8192) // 4KB
+#define DISPLAY_THREAD_STACK_SIZE     (16384) // 4KB
 #define DISPLAY_MSG_QUEUE_LENGTH      (32)
 typedef void (*display_msg_func)(void* p_param);
 typedef struct
