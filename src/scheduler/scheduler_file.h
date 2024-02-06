@@ -10,4 +10,5 @@ scheduler_ret_t scheduler_file_delete_all();
 scheduler_ret_t scheduler_file_get_num_sch(uint32_t * p_num);
 scheduler_ret_t scheduler_file_get_scheduler(scheduler_t * p_sch, uint32_t sch_idx);
 scheduler_ret_t scheduler_file_modify(scheduler_t * const p_new_sch, uint32_t sch_idx);
+scheduler_ret_t scheduler_file_get_multi_scheduler(scheduler_t * p_sch, uint32_t start_idx, uint32_t * p_num_entry_requested);
 #endif

@@ -313,6 +313,62 @@ scheduler_ret_t scheduler_file_modify(scheduler_t * const p_new_sch, uint32_t sc
   }
   return SCHEDULER_ERR_INTERNAL;
 }
+
+scheduler_ret_t scheduler_file_get_multi_scheduler(scheduler_t * p_sch, uint32_t start_idx, uint32_t * p_num_entry_requested)
+{
+  ASSERT_LOG_ERROR_RETURN_VAL((p_sch && (p_num_entry_requested)), SCHEDULER_ERR_PARAM, "Invalid Param");
+  int file_size;
+  size_t file_idx = 0;
+  int32_t lfs_err = 0;
+  lfs_file_t fil = {0};
+  uint32_t num_entry_checked = 0;
+  uint32_t num_entry_requested = *p_num_entry_requested;
+  scheduler_file_entry_t entry = {0};
+  uint8_t json_buff[JSON_BUFFER_LENGTH_MAX]; // Consider using malloc, this may lead to stack overflow
+  // Check file size first
+  file_size = scheduler_file_size(SCHEDULER_FILE_PATH);
+  if(file_size < (sizeof(scheduler_file_header_t)))
+  {
+    CONSOLE_LOG_ERROR("File size invalid");
+    return SCHEDULER_ERR_INTERNAL;
+  }
+  file_idx += sizeof(scheduler_file_header_t);
+  while(file_idx < file_size)
+  {
+    if(!scheduler_file_read(SCHEDULER_FILE_PATH, file_idx, (uint8_t*)&entry, sizeof(scheduler_file_entry_t)))
+    {
+      CONSOLE_LOG_ERROR("File read fail");
+      return SCHEDULER_ERR_INTERNAL;
+    }
+    file_idx += sizeof(scheduler_file_entry_t);
+    if(entry.signature != ENTRY_SIGNATURE)
+    {
+      CONSOLE_LOG_ERROR("Invalid entry signature");
+      return SCHEDULER_ERR_INTERNAL;
+    }
+    if(num_entry_checked >= start_idx && num_entry_requested)
+    {
+      // Found our entry, copy to json buffer
+      if(!scheduler_file_read(SCHEDULER_FILE_PATH, file_idx, json_buff, entry.json_len))
+      {
+        CONSOLE_LOG_ERROR("File read fail");
+        return SCHEDULER_ERR_INTERNAL;
+      }
+      // Convert JSON to scheduler
+      if(!JSON_to_scheduler(p_sch, json_buff, entry.json_len))
+      {
+        CONSOLE_LOG_ERROR("Fail to parse json to scheduler");
+        return SCHEDULER_ERR_INTERNAL;
+      }
+      num_entry_requested--;
+      p_sch++;
+    }
+    file_idx += entry.json_len; // move to next entry
+    num_entry_checked++;
+  }
+  *p_num_entry_requested -= num_entry_requested;
+  return SCHEDULER_OK;
+}
 // Private function
 /**
  * @details Validate the current scheduler file in file system

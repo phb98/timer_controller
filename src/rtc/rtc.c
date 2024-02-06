@@ -51,7 +51,7 @@ void rtc_init()
     }
     p_rtc_controller->init();
     // Get current date time
-    rtc_t now = p_rtc_controller->get_datetime();
+    now = p_rtc_controller->get_datetime();
     CONSOLE_LOG_INFO("Current datetime: %s, %d-%d-%d - %d:%d:%d",rtc_get_DoW_string(now.date.DoW, true),
                                                                 now.date.year, now.date.month, now.date.day,
                                                                 now.time.hour, now.time.minute, now.time.second);
