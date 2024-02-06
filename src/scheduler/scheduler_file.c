@@ -46,8 +46,10 @@
 #define SCHEDULER_FILE_PATH                              ("/System/Scheduler")
 #define SCHEDULER_FILE_TEMP_PATH                         ("/System/Scheduler_TEMP")
 
-#define FILE_LOCK()                                      (xSemaphoreTakeRecursive(file_mutex, portMAX_DELAY))
-#define FILE_UNLOCK()                                    (xSemaphoreGiveRecursive(file_mutex))
+#define FILE_LOCK()                                      do{\
+                                                            (xSemaphoreTakeRecursive(file_mutex, portMAX_DELAY));} while(0);
+#define FILE_UNLOCK()                                    do{\
+                                                          xSemaphoreGiveRecursive(file_mutex);} while(0);
 typedef struct __attribute__ ((__packed__))
 {
   uint32_t file_version;
@@ -550,6 +552,7 @@ static size_t scheduler_file_size(const char * const file_path)
   lfs_file_open(p_lfs, &file, file_path, LFS_O_RDONLY);
   size_t file_size = lfs_file_size(p_lfs,  &file);
   lfs_file_close(p_lfs, &file);
+  FILE_UNLOCK();
   return file_size;
 }
 
@@ -571,6 +574,7 @@ static bool scheduler_file_get_single_scheduler(const char * const file_path, co
   if(lfs_err != LFS_ERR_OK)
   {
     CONSOLE_LOG_ERROR("File open fail:%s", lfs_port_get_err_string(lfs_err));
+    FILE_UNLOCK();
     return false;
   }
   file_size = lfs_file_size(p_lfs, &fil);
