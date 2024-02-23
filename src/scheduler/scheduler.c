@@ -104,7 +104,7 @@ static void rtc_cb(const rtc_t * p_new_time)
       CONSOLE_LOG_ERROR("Get scheduler fail");
       return;
     }
-    if(rtc_is_equal(&sch.trig_time, p_new_time) == 0)
+    if(rtc_is_equal(&sch.trig_time, p_new_time))
     {
       switch(sch.action)
       {

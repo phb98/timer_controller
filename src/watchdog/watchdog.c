@@ -34,7 +34,7 @@ bool is_watchdog_reset()
 void watchdog_force_reboot(void)
 {
   CONSOLE_LOG_INFO("Forcing a watchdog reset");
-  watchdog_enable(0, false);
+  watchdog_enable(1, false);
   while (1)
   {
     // Wait for the watchdog to reset the system
