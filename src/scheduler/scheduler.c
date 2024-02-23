@@ -6,7 +6,7 @@
 #include "scheduler_file.h"
 #include "assert.h"
 // Private function prototype
-static void rtc_cb(const rtc_t * p_new_time);
+static void scheduler_rtc_cb(const rtc_t * p_new_time);
 static void scheduler_recover(const rtc_t * const p_rtc_start, const rtc_t * const p_rtc_end);
 // Private variable
 const char * scheduler_action_str[NUM_OF_SCHEDULER_ACTION] = 
@@ -22,7 +22,7 @@ void sheduler_init()
   rtc_t current_time;
   rtc_get_current(&current_time);
   scheduler_recover(&rtc_start, &current_time);
-  rtc_register_cb(rtc_cb);
+  rtc_register_cb(scheduler_rtc_cb);
   #if 0
   scheduler_t test = 
   {
@@ -87,7 +87,7 @@ scheduler_ret_t scheduler_modify(scheduler_t * const p_new_scheduler, uint32_t i
   return scheduler_file_modify(p_new_scheduler, id);
 }
 // Private function
-static void rtc_cb(const rtc_t * p_new_time)
+static void scheduler_rtc_cb(const rtc_t * p_new_time)
 {
   ASSERT_LOG_ERROR_RETURN(p_new_time, "iNVALID PARAM");
   uint32_t num_sch = 0;

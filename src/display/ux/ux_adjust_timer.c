@@ -31,6 +31,9 @@ typedef enum
 // Private function prototype
 static void        node_draw_scr();
 static ux_node_t * node_process(ux_event_t evt, const ux_evt_param_t * p_evt_param);
+static void        remap_scheduler_output_value(scheduler_t * const p_sch, bool map_sys_to_ui);
+static ux_node_t * node_sm_process(ux_event_t evt, const ux_evt_param_t * p_evt_param);
+static void        single_setting_timer(scheduler_t * const p_timer, timer_setting_t setting, int32_t *p_value, bool is_get);
 // Node variable, will be extern in UX and other node
 ux_node_t ux_adjust_timer_node = 
 {
@@ -64,8 +67,7 @@ static uint32_t query_idx = 0;
 static bool     is_editing_timer = false;
 static bool     timer_modified   = false;
 // Private function
-static ux_node_t * node_sm_process(ux_event_t evt, const ux_evt_param_t * p_evt_param);
-static void edit_single_setting_timer(scheduler_t * const p_timer, timer_setting_t setting, int32_t *p_value, bool is_get);
+
 static void node_draw_scr()
 {
   CONSOLE_LOG_VERBOSE("Request node %s draw screen", NODE_NAME);
@@ -79,6 +81,10 @@ static void node_draw_scr()
       p_highlight_idx = &list_timer_highlight_idx;
       screen_info.edit_timer.chosen_output = choosing_output;
       screen_info.edit_timer.num_timers_listed = num_timer_queried;
+      for(int i = 0; i < num_timer_queried; i++)
+      {
+        remap_scheduler_output_value(&edit_timers[i], true);
+      }
       screen_info.edit_timer.p_timer_list = edit_timers;
       screen_info.edit_timer.highlight_idx = (*p_highlight_idx) % NUM_EDIT_TIMER;
       break;
@@ -225,11 +231,13 @@ static ux_node_t * node_sm_process(ux_event_t evt, const ux_evt_param_t * p_evt_
             CONSOLE_LOG_INFO("Begin adding new timer");
             choosing_timer = -1;
             memset(&editing_timer, 0x0, sizeof(scheduler_t));
+            editing_timer.act_param.output.channel = choosing_output;
           }
           else
           {
             choosing_timer = edit_timers[list_timer_highlight_idx].id;
             memcpy(&editing_timer, &edit_timers[list_timer_highlight_idx], sizeof(scheduler_t));
+            remap_scheduler_output_value(&editing_timer, true); // remap output value for easy edit
             is_editing_timer = false;
             CONSOLE_LOG_INFO("Begin editting timer:%d", choosing_timer);
           }
@@ -252,11 +260,19 @@ static ux_node_t * node_sm_process(ux_event_t evt, const ux_evt_param_t * p_evt_
         {
           if(choosing_timer == -1)
           {
-            if(timer_modified) scheduler_new(&editing_timer); // Add new timer
+            if(timer_modified) 
+            {
+              remap_scheduler_output_value(&editing_timer, false); // remap output value for system
+              scheduler_new(&editing_timer); // Add new timer
+            }
           }
           else if(choosing_timer != -1 && edit_timer_highlight_idx != NUM_SETTING_TIMER)
           {
-            if(timer_modified) scheduler_modify(&editing_timer, choosing_timer);
+            if(timer_modified) 
+            {
+              remap_scheduler_output_value(&editing_timer, false); // remap output value for system
+              scheduler_modify(&editing_timer, choosing_timer);
+            }
           }
           num_timer_queried = NUM_EDIT_TIMER;
           if(SCHEDULER_OK != scheduler_output_get_by_channel(choosing_output, query_idx, edit_timers, &num_timer_queried))
@@ -312,13 +328,20 @@ static ux_node_t * node_sm_process(ux_event_t evt, const ux_evt_param_t * p_evt_
             wrap_config.up_wrap  = true;
             wrap_config.lower_bound = 0;
             const int up_wrap_config[NUM_SETTING_TIMER] = {
-              23, 59, 59, 0xff, 0xfff, OUTPUT_CONTROLLER_MAX_VAL
+              23, 59, 59, 0xff, 0xfff, 100 // 100%, will be remap when scheduler trigger
             };
             wrap_config.upper_bound = up_wrap_config[edit_timer_highlight_idx % NUM_SETTING_TIMER];
-            int32_t temp_num;
-            edit_single_setting_timer(&editing_timer, edit_timer_highlight_idx, &temp_num, true);
-            temp_num = ux_utility_adjust_var_wrapping(&wrap_config, temp_num, IS_UP_CLICK(p_evt_param) ? 1 : -1);
-            edit_single_setting_timer(&editing_timer, edit_timer_highlight_idx, &temp_num, false);
+            int32_t temp_set_val;
+            int32_t val_step = 1;
+            if(edit_timer_highlight_idx % NUM_SETTING_TIMER == SETTING_OUTPUT_VALUE)
+            {
+              // When changing output value for binary output, there are only 2 possible value: 0 and 100
+              val_step = (output_controller_get_type(editing_timer.act_param.output.channel) == OUTPUT_TYPE_BINARY) ? 100 : 1;
+            }
+            val_step *= IS_UP_CLICK(p_evt_param) ? 1 : -1;
+            single_setting_timer(&editing_timer, edit_timer_highlight_idx, &temp_set_val, true); // Get current value
+            temp_set_val = ux_utility_adjust_var_wrapping(&wrap_config, temp_set_val, val_step);
+            single_setting_timer(&editing_timer, edit_timer_highlight_idx, &temp_set_val, false);// Set new value
             p_node_ret = NODE_SELF();
           }
           break;
@@ -339,7 +362,7 @@ static void save_timer(const scheduler_t * p_timer, int32_t sch_idx)
 
 }
 
-static void edit_single_setting_timer(scheduler_t * const p_timer, timer_setting_t setting, int32_t *p_value, bool is_get)
+static void single_setting_timer(scheduler_t * const p_timer, timer_setting_t setting, int32_t *p_value, bool is_get)
 {
   ASSERT_LOG_ERROR_RETURN(p_timer && p_value, "Invalid Param");
   switch(setting)
@@ -371,5 +394,26 @@ static void edit_single_setting_timer(scheduler_t * const p_timer, timer_setting
     default:
       CONSOLE_LOG_ERROR("Unknown setting:%d", setting);
       break;
+  }
+}
+// @param map_sys_to_ui: true: remap from 0-OUTPUT_CONTROLLER_MAX_VAL to 0-100, false: remap from 0-100 to 0-OUTPUT_CONTROLLER_MAX_VAL
+static void remap_scheduler_output_value(scheduler_t * const p_sch, bool map_sys_to_ui)
+{
+  ASSERT_LOG_ERROR_RETURN(p_sch, "Invalid Param");
+  if(output_controller_get_type(p_sch->act_param.output.channel) == OUTPUT_TYPE_BINARY)
+  {
+    if(p_sch->act_param.output.value > 0)
+    {
+      p_sch->act_param.output.value = map_sys_to_ui ? 100 : OUTPUT_CONTROLLER_MAX_VAL;
+    }
+    return;
+  }
+  if(map_sys_to_ui)
+  {
+    p_sch->act_param.output.value = (p_sch->act_param.output.value * 100) / OUTPUT_CONTROLLER_MAX_VAL;
+  }
+  else
+  {
+    p_sch->act_param.output.value = (p_sch->act_param.output.value * OUTPUT_CONTROLLER_MAX_VAL) / 100;
   }
 }

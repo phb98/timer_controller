@@ -223,7 +223,7 @@ static void ui_draw_adjust_timer_screen(u8g2_t * const p_u8g2,  const ui_screen_
       {
         const rtc_t * p_trig_time = &(p_screen_info->edit_timer.p_timer_list[i].trig_time);
         output_val_t out_val = p_screen_info->edit_timer.p_timer_list[i].act_param.output.value; 
-        snprintf(val_str[i], 32, "%02d:%02d:%02d, val:%lu", p_trig_time->time.hour, p_trig_time->time.minute, p_trig_time->time.second, 
+        snprintf(val_str[i], 32, "%02d:%02d:%02d, val:%lu%%", p_trig_time->time.hour, p_trig_time->time.minute, p_trig_time->time.second, 
                                                               out_val);
       }
       if(p_screen_info->edit_timer.num_timers_listed < NUM_MAX_LINE)
@@ -272,9 +272,9 @@ static void ui_draw_adjust_timer_screen(u8g2_t * const p_u8g2,  const ui_screen_
         snprintf(item_val_str[0], 32, "%02d", p_sch->trig_time.time.hour);
         snprintf(item_val_str[1], 32, "%02d", p_sch->trig_time.time.minute);
         snprintf(item_val_str[2], 32, "%02d", p_sch->trig_time.time.second);
-        snprintf(item_val_str[3], 32, "%02d", p_sch->dow_mask);
-        snprintf(item_val_str[4], 32, "%02d", p_sch->month_mask);
-        snprintf(item_val_str[5], 32, "%02d", p_sch->act_param.output.value);
+        snprintf(item_val_str[3], 32, "%d",   p_sch->dow_mask);
+        snprintf(item_val_str[4], 32, "%d",   p_sch->month_mask);
+        snprintf(item_val_str[5], 32, "%d%%",  p_sch->act_param.output.value);
       }
       ui_draw_list_t list_config = 
       {
