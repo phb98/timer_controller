@@ -13,6 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/lfs)
 include_directories(${PROJECT_SOURCE_DIR}/src/scheduler)
 include_directories(${PROJECT_SOURCE_DIR}/src/output_controller)
 include_directories(${PROJECT_SOURCE_DIR}/src/coreJSON/source/include)
+include_directories(${PROJECT_SOURCE_DIR}/src/watchdog)
 
 
 

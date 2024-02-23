@@ -1,12 +1,13 @@
 include(include.cmake)
 set(MODULE_LIB_LIST "display"
-"console"
-"user_input"
-"hal_i2c"
-"rtc"
-"LFS"
-"scheduler"
-"output_controller")
+                    "console"
+                    "user_input"
+                    "hal_i2c"
+                    "rtc"
+                    "LFS"
+                    "scheduler"
+                    "output_controller"
+                    "watchdog")
 
 
 # submoudle directory
@@ -18,6 +19,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/rtc)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lfs)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/scheduler)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/output_controller)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/watchdog)
 
 # Glob all main source files
 file(GLOB C_MAIN_SOURCES *.c)
