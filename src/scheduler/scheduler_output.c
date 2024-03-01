@@ -33,3 +33,17 @@ scheduler_ret_t scheduler_output_get_by_channel(const output_ch_t ch, uint32_t s
   *p_num_out = num_sch_found;
   return ret;
 }
+
+scheduler_ret_t scheduler_output_set_channel(const scheduler_t * const p_sch)
+{
+  ASSERT_LOG_ERROR_RETURN(p_sch, "Invalid param");
+  scheduler_ret_t ret = SCHEDULER_OK;
+  if(p_sch->action != SCHEDULER_ACTION_OUTPUT)
+  {
+    CONSOLE_LOG_ERROR("Invalid action");
+    return SCHEDULER_ERR_INVALID_ACTION;
+  }
+  CONSOLE_LOG_DEBUG("Set output channel %d to %d", p_sch->act_param.output.channel, p_sch->act_param.output.value);
+  output_controller_set_val(p_sch->act_param.output.channel, p_sch->act_param.output.value);
+  return ret;
+}

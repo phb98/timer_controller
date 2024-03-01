@@ -5,6 +5,9 @@
 #include "core_json.h"
 #include "scheduler_file.h"
 #include "assert.h"
+#include "scheduler_output.h"
+#define NUM_CACHE_SCH (16)
+
 // Private function prototype
 static void scheduler_rtc_cb(const rtc_t * p_new_time);
 static void scheduler_recover(const rtc_t * const p_rtc_start, const rtc_t * const p_rtc_end);
@@ -91,42 +94,53 @@ static void scheduler_rtc_cb(const rtc_t * p_new_time)
 {
   ASSERT_LOG_ERROR_RETURN(p_new_time, "iNVALID PARAM");
   uint32_t num_sch = 0;
+  uint32_t sch_query_idx = 0;
   if(scheduler_file_get_num_sch(&num_sch) != SCHEDULER_OK)
   {
     CONSOLE_LOG_ERROR("Get num scheduler fail");
     return;
   }
-  scheduler_t sch;
-  for(int i = 0; i < num_sch; i++)
+  scheduler_t sch_cache[NUM_CACHE_SCH] = {0};
+  while(num_sch)
   {
-    if(scheduler_file_get_scheduler(&sch, i) != SCHEDULER_OK)
+    uint32_t num_sch_in_cache = NUM_CACHE_SCH;
+    if(scheduler_file_get_multi_scheduler(sch_cache, sch_query_idx, &num_sch_in_cache) != SCHEDULER_OK)
     {
       CONSOLE_LOG_ERROR("Get scheduler fail");
       return;
     }
-    if(rtc_is_equal(&sch.trig_time, p_new_time))
+    if(num_sch_in_cache == 0 || num_sch_in_cache > NUM_CACHE_SCH)
     {
-      switch(sch.action)
+      CONSOLE_LOG_ERROR("Invalid num_sch_in_cache");
+      return;
+    }
+    for(int i = 0; i < num_sch_in_cache; i++)
+    {
+      if(rtc_is_equal(&(sch_cache[i].trig_time), p_new_time))
       {
-        case SCHEDULER_ACTION_OUTPUT:
+        switch(sch_cache[i].action)
         {
-          output_controller_set_val(sch.act_param.output.channel, sch.act_param.output.value);
-          break;
-        }
-        default:
-        {
-          CONSOLE_LOG_ERROR("Unknow action");
-          break;
+          case SCHEDULER_ACTION_OUTPUT:
+          {
+            scheduler_output_set_channel(&sch_cache[i]);
+            break;
+          }
+          default:
+          {
+            CONSOLE_LOG_ERROR("Unknow action");
+            break;
+          }
         }
       }
     }
+    sch_query_idx += num_sch_in_cache;
+    num_sch -= num_sch_in_cache;
   }
 }
 
 static void scheduler_recover(const rtc_t * const p_rtc_start, const rtc_t * const p_rtc_end)
 {
   ASSERT_LOG_ERROR_RETURN(p_rtc_start && p_rtc_end, "Invalid param");
-  #define NUM_CACHE_SCH (4)
   scheduler_t sch_cache[NUM_CACHE_SCH] = {0};
   uint32_t num_sch_stored = 0;
   uint32_t num_sch_in_cache = NUM_CACHE_SCH;

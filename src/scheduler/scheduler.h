@@ -35,6 +35,7 @@ typedef enum
   SCHEDULER_ERR_DUPLICATE,
   SCHEDULER_ERR_INTERNAL,
   SCHEDULER_ERR_NOT_FOUND,
+  SCHEDULER_ERR_INVALID_ACTION,
 } scheduler_ret_t;
 void sheduler_init();
 scheduler_ret_t scheduler_new(const scheduler_t * const p_new_scheduler);

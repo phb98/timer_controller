@@ -404,7 +404,7 @@ static void remap_scheduler_output_value(scheduler_t * const p_sch, bool map_sys
   {
     if(p_sch->act_param.output.value > 0)
     {
-      p_sch->act_param.output.value = map_sys_to_ui ? 100 : OUTPUT_CONTROLLER_MAX_VAL;
+      p_sch->act_param.output.value = (map_sys_to_ui ? 100 : OUTPUT_CONTROLLER_MAX_VAL);
     }
     return;
   }
